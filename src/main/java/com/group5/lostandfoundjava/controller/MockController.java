@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MockController {
     @GetMapping("/api/auth/mockapi")
     public ResponseEntity<String> mockApi() {
-        return ResponseEntity.ok("MOCK CONTROLLER TESTED lerk ti2");
+        return ResponseEntity.ok("mockapi tested 33333");
     }
 }
