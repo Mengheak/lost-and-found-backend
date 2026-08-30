@@ -1,0 +1,11 @@
+# Overrides applied when running inside the Docker container (SPRING_PROFILES_ACTIVE=docker).
+spring:
+  datasource:
+    # Same precedence as the default profile: an explicit DB_URL wins, otherwise
+    # compose one pointing at the `db` service from docker-compose.
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME:lostfound}}
+
+logging:
+  pattern:
+    # No ANSI colors in container logs
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n"

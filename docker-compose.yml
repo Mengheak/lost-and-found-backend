@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lostfound-java-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-lostfound}
+      POSTGRES_USER: ${DB_USER:-lostfound}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lostfound}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-lostfound} -d ${DB_NAME:-lostfound}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: lostfound-java-app
+    env_file:
+      - ".env"
+    # Waits for the database health check to pass, so Flyway never starts against
+    # a Postgres that is still booting.
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-lostfound}
+      DB_USER: ${DB_USER:-lostfound}
+      DB_PASSWORD: ${DB_PASSWORD:-lostfound}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:4300}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-dot-env-0123456789abcdef0123456789}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
+      FIREBASE_CREDENTIALS: ${FIREBASE_CREDENTIALS:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-mengheak088@gmail.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-12345678}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      ADMIN_RESET_PASSWORD: ${ADMIN_RESET_PASSWORD:-false}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  pgdata:
