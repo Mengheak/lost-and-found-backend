@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.user.UserResponse;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.Role;

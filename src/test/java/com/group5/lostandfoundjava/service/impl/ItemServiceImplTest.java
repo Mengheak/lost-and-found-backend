@@ -6,9 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.ForbiddenException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.ForbiddenException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.item.CreateItemRequest;
 import com.group5.lostandfoundjava.dto.item.ItemResponse;
 import com.group5.lostandfoundjava.dto.item.UpdateItemRequest;

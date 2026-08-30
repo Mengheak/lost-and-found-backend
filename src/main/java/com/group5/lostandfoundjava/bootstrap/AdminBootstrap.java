@@ -5,6 +5,8 @@ import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.Role;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import java.util.Optional;
+
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -30,9 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
  * deliberate {@code resetPassword} escape hatch for when everybody is locked out.
  */
 @Component
+@Slf4j
 public class AdminBootstrap implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(AdminBootstrap.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

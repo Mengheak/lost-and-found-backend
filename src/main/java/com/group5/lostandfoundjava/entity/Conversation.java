@@ -9,12 +9,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * A chat thread between exactly two users about one item.
- *
- * <p>There is no "owner" side: whoever starts the thread becomes {@code userA} and the other person
- * {@code userB}, which is why lookups have to check both orders.
- */
+
 @Getter
 @Setter
 @Entity

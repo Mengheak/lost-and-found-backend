@@ -38,11 +38,6 @@ public class SecurityConfig {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * Hashes passwords with bcrypt at strength 12. Bcrypt is deliberately slow, which is what makes
-     * a stolen database expensive to crack; the same hash never comes out twice because bcrypt
-     * salts every password for us.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
@@ -51,8 +46,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF protects cookie-based sessions. This API has none: the token is sent in a
-                // header, which a foreign site cannot make the browser add on its own.
+
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 // No server-side sessions — every request proves who it is with its own token.
@@ -67,14 +61,8 @@ public class SecurityConfig {
                                 "/actuator/health/**",
                                 "/ws/**")
                         .permitAll()
-
-                        // These two sit under prefixes that are public below, so they have to be
-                        // listed FIRST — the first matching rule wins.
                         .requestMatchers(HttpMethod.GET, "/api/items/my", "/api/users/me")
                         .authenticated()
-
-                        // Browsing is open to everyone; only reads (GET) are listed here, so
-                        // creating or editing still needs a token.
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/items",
@@ -86,8 +74,6 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
-                        // Anything not named above needs a signed-in user. Defaulting to "closed"
-                        // means a new endpoint is never accidentally public.
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(ex -> {

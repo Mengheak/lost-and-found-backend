@@ -3,17 +3,13 @@ spring:
     name: lost-and-found-java
 
   datasource:
-    # DB_URL wins when set, so a managed host can supply a full JDBC string with
-    # its own options — Azure Postgres, for one, requires ?sslmode=require.
-    # Otherwise the URL is composed from the parts below.
+
     url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:lostfound}}
     username: ${DB_USER:lostfound}
     password: ${DB_PASSWORD:lostfound}
 
   jpa:
     hibernate:
-      # Never let Hibernate change the schema: Flyway owns it. "validate" only
-      # checks that the entities and the tables still agree, and fails fast if not.
       ddl-auto: validate
     open-in-view: false
     properties:
@@ -32,30 +28,23 @@ server:
 
 app:
   cors:
-    # Browser origins allowed to call this API. Comma-separated.
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:4300}
   login-throttle:
-    # Failed logins allowed per email before a temporary lockout.
     max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
     lockout-duration: ${LOGIN_LOCKOUT:15m}
     attempt-window: ${LOGIN_ATTEMPT_WINDOW:15m}
   jwt:
-    # HS256 secret — must be at least 32 bytes. Override in every real environment.
     secret: ${JWT_SECRET:local-dev-only-secret-0123456789abcdef0123456789}
     access-token-ttl: ${JWT_ACCESS_TTL:15m}
     refresh-token-ttl: ${JWT_REFRESH_TTL:7d}
   fcm:
-    # Path to a Firebase service-account JSON file. Leave empty to disable push notifications.
     credentials-path: ${FIREBASE_CREDENTIALS:}
   admin:
-    # Default admin, ensured on startup: created if missing, promoted if it already exists.
-    # An existing account's password is never overwritten. Set ADMIN_EMAIL empty to disable.
-    # Override ADMIN_PASSWORD in every real environment — this default is for local dev only.
+
     email: ${ADMIN_EMAIL:mengheak088@gmail.com}
     password: ${ADMIN_PASSWORD:12345678}
     name: ${ADMIN_NAME:Administrator}
-    # Turn on for a single boot to force the password back to the value above,
-    # then turn it off again. Never overwrites a password while false.
+
     reset-password: ${ADMIN_RESET_PASSWORD:false}
 
 springdoc:

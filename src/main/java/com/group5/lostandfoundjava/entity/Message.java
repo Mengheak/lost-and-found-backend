@@ -9,7 +9,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-/** One chat message. It must carry text, an image link, or both — never neither. */
 @Getter
 @Setter
 @Entity

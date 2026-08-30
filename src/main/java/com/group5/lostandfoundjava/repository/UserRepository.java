@@ -9,19 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-/**
- * Database access for {@link User}.
- *
- * <p>There is no implementation class: Spring Data reads the method names and writes the queries
- * itself. {@code findByEmail} becomes {@code select * from users where email = ?}.
- * {@link JpaRepository} already provides save, findById, findAll, delete and friends.
- */
+
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmail(String email);
 
-    /** {@link Optional} rather than a nullable return, so callers cannot forget the "missing" case. */
     Optional<User> findByEmail(String email);
 
     long countByRole(Role role);

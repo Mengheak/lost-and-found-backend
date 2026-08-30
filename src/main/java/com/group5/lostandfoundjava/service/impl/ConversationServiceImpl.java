@@ -1,9 +1,9 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.ForbiddenException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.ForbiddenException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.chat.ConversationResponse;
 import com.group5.lostandfoundjava.dto.chat.StartConversationRequest;
 import com.group5.lostandfoundjava.entity.Conversation;

@@ -6,7 +6,6 @@ import com.group5.lostandfoundjava.entity.Conversation;
 import java.time.Instant;
 import java.util.UUID;
 
-/** A chat thread: which item it is about and who the two participants are. */
 public record ConversationResponse(
         UUID id,
         ItemSummaryResponse item,

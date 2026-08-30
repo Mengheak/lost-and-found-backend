@@ -7,10 +7,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Body of {@code PUT /api/items/{id}}. Every field is optional: a {@code null} means "leave this
- * one as it is", so the client can send only what actually changed.
- */
 public record UpdateItemRequest(
         @Size(min = 1, max = 255) String name,
         UUID categoryId,

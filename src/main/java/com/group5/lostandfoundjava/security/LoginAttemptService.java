@@ -5,6 +5,8 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,6 +29,7 @@ public class LoginAttemptService {
     private final LoginThrottleProperties properties;
     private final Clock clock;
 
+    @Autowired
     public LoginAttemptService(LoginThrottleProperties properties) {
         this(properties, Clock.systemUTC());
     }

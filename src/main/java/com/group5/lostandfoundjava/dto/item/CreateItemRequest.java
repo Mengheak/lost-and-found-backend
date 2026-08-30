@@ -9,13 +9,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Body of {@code POST /api/items}.
- *
- * <p>{@code rewardAmount} is only accepted on {@code LOST} items and {@code storageLocation} only
- * on {@code FOUND} ones. That rule depends on another field, so it lives in the service rather than
- * in an annotation.
- */
+
 public record CreateItemRequest(
         ItemType type,
         @NotBlank @Size(max = 255) String name,

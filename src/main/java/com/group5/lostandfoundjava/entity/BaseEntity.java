@@ -8,16 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 
-/**
- * Fields shared by every table: the primary key and the two timestamps.
- *
- * <p>{@code @MappedSuperclass} means "copy these columns into each entity that extends me" — it is
- * not a table of its own.
- *
- * <p>The id is a random {@link UUID} generated in Java rather than a database sequence. That lets
- * the application know an object's id before it is saved, and makes ids safe to expose in URLs
- * because they cannot be guessed or counted.
- */
+
 @Getter
 @MappedSuperclass
 public abstract class BaseEntity {
@@ -32,17 +23,11 @@ public abstract class BaseEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
 
-    /** Hibernate calls this automatically right before an UPDATE statement. */
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
     }
 
-    /**
-     * Two entities are the same row when they have the same type and the same id. Comparing on the
-     * id only (never on the other fields) is the safe rule for JPA entities, because Hibernate may
-     * hand out proxies and partially loaded copies of the same row.
-     */
     @Override
     public boolean equals(Object other) {
         if (this == other) {

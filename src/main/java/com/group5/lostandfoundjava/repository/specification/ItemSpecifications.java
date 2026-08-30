@@ -64,7 +64,6 @@ public final class ItemSpecifications {
         return value != null && !value.isBlank();
     }
 
-    /** Turns "Fossil" into "%fossil%" so the LIKE matches anywhere in the column, ignoring case. */
     private static String contains(String value) {
         return "%" + value.trim().toLowerCase() + "%";
     }

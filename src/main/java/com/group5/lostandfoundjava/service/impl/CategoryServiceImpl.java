@@ -1,7 +1,7 @@
 package com.group5.lostandfoundjava.service.impl;
 
-import com.group5.lostandfoundjava.common.exception.ConflictException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.category.CategoryRequest;
 import com.group5.lostandfoundjava.dto.category.CategoryResponse;
 import com.group5.lostandfoundjava.entity.Category;

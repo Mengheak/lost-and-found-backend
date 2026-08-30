@@ -19,22 +19,13 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * A reported item — either something the reporter lost or something they found.
- *
- * <p>Two fields only make sense for one of the two types, which the service layer enforces:
- * {@link #rewardAmount} for {@code LOST} items and {@link #storageLocation} for {@code FOUND} ones.
- */
+
 @Getter
 @Setter
 @Entity
 @Table(name = "items")
 public class Item extends BaseEntity {
 
-    /**
-     * {@code LAZY} means the user row is only fetched from the database when the field is actually
-     * read, instead of joining it into every item query.
-     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

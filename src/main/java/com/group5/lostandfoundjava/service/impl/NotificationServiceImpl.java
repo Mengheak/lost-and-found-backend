@@ -1,8 +1,8 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.common.exception.ForbiddenException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.ForbiddenException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.notification.NotificationResponse;
 import com.group5.lostandfoundjava.entity.Notification;
 import com.group5.lostandfoundjava.entity.User;

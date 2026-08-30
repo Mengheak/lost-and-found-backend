@@ -37,7 +37,6 @@ public class Rating extends BaseEntity {
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
-    /** 1 to 5; the range is also enforced by a CHECK constraint in the database. */
     @Column(nullable = false)
     private int score;
 

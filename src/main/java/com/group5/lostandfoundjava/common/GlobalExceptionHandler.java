@@ -1,11 +1,11 @@
 package com.group5.lostandfoundjava.common;
 
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.ConflictException;
-import com.group5.lostandfoundjava.common.exception.ForbiddenException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
-import com.group5.lostandfoundjava.common.exception.TooManyRequestsException;
-import com.group5.lostandfoundjava.common.exception.UnauthorizedException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.ForbiddenException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.TooManyRequestsException;
+import com.group5.lostandfoundjava.exception.UnauthorizedException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.LinkedHashMap;
 import java.util.Map;

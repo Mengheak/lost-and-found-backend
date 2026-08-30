@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /** A rating as shown on a profile page: who left it, for which item, and what they said. */
-public record RatingResponse(
+public record    RatingResponse(
         UUID id,
         UserSummaryResponse fromUser,
         UUID toUserId,

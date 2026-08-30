@@ -2,8 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 
-# Cache dependencies: resolve them from the POM alone first, so editing a source
-# file does not force Maven to download the world again.
+# Cache dependencies
 COPY pom.xml ./
 RUN mvn -B -q dependency:go-offline
 

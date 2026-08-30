@@ -1,8 +1,8 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.user.UserResponse;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.Role;

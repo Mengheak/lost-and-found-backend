@@ -23,7 +23,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    /** Always stored lower-cased and trimmed, so "A@b.com" and "a@b.com" are the same account. */
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -35,7 +34,6 @@ public class User extends BaseEntity {
     @Column(name = "profile_photo_url")
     private String profilePhotoUrl;
 
-    /** Cached average of the scores in {@code ratings}, recalculated whenever a rating is added. */
     @Column(name = "rating_avg", nullable = false)
     private double ratingAvg = 0.0;
 

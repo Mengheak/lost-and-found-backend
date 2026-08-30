@@ -1,7 +1,7 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.saveditem.SavedItemResponse;
 import com.group5.lostandfoundjava.entity.Item;
 import com.group5.lostandfoundjava.entity.SavedItem;

@@ -10,8 +10,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.group5.lostandfoundjava.common.exception.ConflictException;
-import com.group5.lostandfoundjava.common.exception.UnauthorizedException;
+import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.UnauthorizedException;
 import com.group5.lostandfoundjava.config.JwtProperties;
 import com.group5.lostandfoundjava.config.LoginThrottleProperties;
 import com.group5.lostandfoundjava.dto.auth.AuthResponse;

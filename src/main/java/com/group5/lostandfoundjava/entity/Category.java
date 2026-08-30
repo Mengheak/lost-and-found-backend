@@ -6,9 +6,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Shared taxonomy for items ("Wallet", "Keys", ...). Seeded by Flyway and editable by admins only.
- */
 @Getter
 @Setter
 @Entity

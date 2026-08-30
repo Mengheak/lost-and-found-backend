@@ -1,8 +1,8 @@
 package com.group5.lostandfoundjava.service.impl;
 
-import com.group5.lostandfoundjava.common.exception.ConflictException;
-import com.group5.lostandfoundjava.common.exception.TooManyRequestsException;
-import com.group5.lostandfoundjava.common.exception.UnauthorizedException;
+import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.TooManyRequestsException;
+import com.group5.lostandfoundjava.exception.UnauthorizedException;
 import com.group5.lostandfoundjava.dto.auth.AuthResponse;
 import com.group5.lostandfoundjava.dto.auth.LoginRequest;
 import com.group5.lostandfoundjava.dto.auth.RefreshTokenRequest;

@@ -4,7 +4,6 @@ import com.group5.lostandfoundjava.entity.User;
 import java.time.Instant;
 import java.util.UUID;
 
-/** What other users are allowed to see: no email, no phone number, no role. */
 public record PublicUserResponse(
         UUID id, String name, String profilePhotoUrl, double ratingAvg, Instant memberSince) {
 

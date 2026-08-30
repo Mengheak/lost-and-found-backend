@@ -1,7 +1,7 @@
 package com.group5.lostandfoundjava.service.impl;
 
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.NotFoundException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.user.PublicUserResponse;
 import com.group5.lostandfoundjava.dto.user.UpdateProfileRequest;
 import com.group5.lostandfoundjava.dto.user.UserResponse;

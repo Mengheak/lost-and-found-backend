@@ -8,8 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.group5.lostandfoundjava.common.exception.BadRequestException;
-import com.group5.lostandfoundjava.common.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.ConflictException;
 import com.group5.lostandfoundjava.dto.rating.RatingResponse;
 import com.group5.lostandfoundjava.dto.rating.SubmitRatingRequest;
 import com.group5.lostandfoundjava.entity.Category;
