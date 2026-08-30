@@ -2,48 +2,43 @@ services:
   db:
     image: postgres:16-alpine
     container_name: lostfound-java-db
+    restart: unless-stopped
+    command: postgres -c shared_buffers=96MB -c max_connections=30
     environment:
-      POSTGRES_DB: ${DB_NAME:-lostfound}
-      POSTGRES_USER: ${DB_USER:-lostfound}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-lostfound}
-    ports:
-      - "${DB_PORT:-5432}:5432"
+      POSTGRES_DB: ${DB_NAME:?required}
+      POSTGRES_USER: ${DB_USER:?required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?required}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    mem_limit: 256m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-lostfound} -d ${DB_NAME:-lostfound}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   app:
-    build: .
+    image: ghcr.io/${GH_REPO}:${IMAGE_TAG:-latest}
     container_name: lostfound-java-app
-    env_file:
-      - ".env"
-    # Waits for the database health check to pass, so Flyway never starts against
-    # a Postgres that is still booting.
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+    env_file: [".env"]
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: db
       DB_PORT: "5432"
-      DB_NAME: ${DB_NAME:-lostfound}
-      DB_USER: ${DB_USER:-lostfound}
-      DB_PASSWORD: ${DB_PASSWORD:-lostfound}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:4300}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-dot-env-0123456789abcdef0123456789}
-      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
-      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
-      FIREBASE_CREDENTIALS: ${FIREBASE_CREDENTIALS:-}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-mengheak088@gmail.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-12345678}
-      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
-      ADMIN_RESET_PASSWORD: ${ADMIN_RESET_PASSWORD:-false}
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=65 -XX:+UseSerialGC -Xss512k"
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "127.0.0.1:8080:8080"
+    mem_limit: 600m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
 volumes:
   pgdata:
