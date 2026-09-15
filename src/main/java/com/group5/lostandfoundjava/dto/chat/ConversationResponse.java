@@ -2,23 +2,27 @@ package com.group5.lostandfoundjava.dto.chat;
 
 import com.group5.lostandfoundjava.dto.item.ItemSummaryResponse;
 import com.group5.lostandfoundjava.dto.user.UserSummaryResponse;
-import com.group5.lostandfoundjava.entity.Conversation;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record ConversationResponse(
-        UUID id,
-        ItemSummaryResponse item,
-        UserSummaryResponse userA,
-        UserSummaryResponse userB,
-        Instant createdAt) {
+/** A chat thread between two users about one item. */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ConversationResponse {
 
-    public static ConversationResponse from(Conversation conversation) {
-        return new ConversationResponse(
-                conversation.getId(),
-                ItemSummaryResponse.from(conversation.getItem()),
-                UserSummaryResponse.from(conversation.getUserA()),
-                UserSummaryResponse.from(conversation.getUserB()),
-                conversation.getCreatedAt());
-    }
+    private UUID id;
+
+    private ItemSummaryResponse item;
+
+    private UserSummaryResponse userA;
+
+    private UserSummaryResponse userB;
+
+    private Instant createdAt;
 }

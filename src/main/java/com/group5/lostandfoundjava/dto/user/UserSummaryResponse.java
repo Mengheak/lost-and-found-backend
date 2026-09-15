@@ -1,12 +1,23 @@
 package com.group5.lostandfoundjava.dto.user;
 
-import com.group5.lostandfoundjava.entity.User;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record UserSummaryResponse(UUID id, String name, String profilePhotoUrl, double ratingAvg) {
+/** The few user fields shown next to something else — an item, a message, a rating. */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserSummaryResponse {
 
-    public static UserSummaryResponse from(User user) {
-        return new UserSummaryResponse(
-                user.getId(), user.getName(), user.getProfilePhotoUrl(), user.getRatingAvg());
-    }
+    private UUID id;
+
+    private String name;
+
+    private String profilePhotoUrl;
+
+    private double ratingAvg;
 }

@@ -1,14 +1,25 @@
 package com.group5.lostandfoundjava.dto.item;
 
-import com.group5.lostandfoundjava.entity.Item;
 import com.group5.lostandfoundjava.entity.enums.ItemStatus;
 import com.group5.lostandfoundjava.entity.enums.ItemType;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record ItemSummaryResponse(UUID id, String name, ItemType type, ItemStatus status) {
+/** Just enough of an item to label a conversation with it. */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ItemSummaryResponse {
 
-    public static ItemSummaryResponse from(Item item) {
-        return new ItemSummaryResponse(
-                item.getId(), item.getName(), item.getType(), item.getStatus());
-    }
+    private UUID id;
+
+    private String name;
+
+    private ItemType type;
+
+    private ItemStatus status;
 }

@@ -1,14 +1,23 @@
 package com.group5.lostandfoundjava.dto.saveditem;
 
 import com.group5.lostandfoundjava.dto.item.ItemResponse;
-import com.group5.lostandfoundjava.entity.SavedItem;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record SavedItemResponse(UUID id, ItemResponse item, Instant savedAt) {
+/** One entry of a user's shortlist, with the whole item embedded. */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SavedItemResponse {
 
-    public static SavedItemResponse from(SavedItem savedItem) {
-        return new SavedItemResponse(
-                savedItem.getId(), ItemResponse.from(savedItem.getItem()), savedItem.getCreatedAt());
-    }
+    private UUID id;
+
+    private ItemResponse item;
+
+    private Instant savedAt;
 }

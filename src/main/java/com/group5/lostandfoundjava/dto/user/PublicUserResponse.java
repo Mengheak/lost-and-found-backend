@@ -1,18 +1,29 @@
 package com.group5.lostandfoundjava.dto.user;
 
-import com.group5.lostandfoundjava.entity.User;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record PublicUserResponse(
-        UUID id, String name, String profilePhotoUrl, double ratingAvg, Instant memberSince) {
+/**
+ * Somebody else's profile. Carries no email, phone or role: this is served to anyone, including
+ * callers who are not logged in.
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PublicUserResponse {
 
-    public static PublicUserResponse from(User user) {
-        return new PublicUserResponse(
-                user.getId(),
-                user.getName(),
-                user.getProfilePhotoUrl(),
-                user.getRatingAvg(),
-                user.getCreatedAt());
-    }
+    private UUID id;
+
+    private String name;
+
+    private String profilePhotoUrl;
+
+    private double ratingAvg;
+
+    private Instant memberSince;
 }
