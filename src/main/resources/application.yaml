@@ -11,12 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    open-in-view: false
-    properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
-        default_batch_fetch_size: 50
+    show-sql: true
 
   flyway:
     enabled: true
@@ -40,11 +35,9 @@ app:
   fcm:
     credentials-path: ${FIREBASE_CREDENTIALS:}
   admin:
-
     email: ${ADMIN_EMAIL:mengheak088@gmail.com}
     password: ${ADMIN_PASSWORD:12345678}
     name: ${ADMIN_NAME:Administrator}
-
     reset-password: ${ADMIN_RESET_PASSWORD:false}
 
 springdoc:
@@ -52,10 +45,8 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-    # Group endpoints by tag and keep a stable order instead of the arbitrary scan order.
     tags-sorter: alpha
     operations-sorter: method
-    # Keep the pasted access token across page reloads.
     persist-authorization: true
     display-request-duration: true
     doc-expansion: none

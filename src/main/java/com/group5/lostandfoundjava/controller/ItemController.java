@@ -135,8 +135,16 @@ public class ItemController {
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
                     Pageable pageable) {
 
-        ItemSearchFilter filter =
-                new ItemSearchFilter(type, status, categoryId, keyword, brand, color, dateFrom, dateTo);
+        ItemSearchFilter filter = ItemSearchFilter.builder()
+                .type(type)
+                .status(status)
+                .categoryId(categoryId)
+                .keyword(keyword)
+                .brand(brand)
+                .color(color)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .build();
         return ApiResponse.ok(itemService.search(filter, pageable));
     }
 
@@ -210,7 +218,7 @@ public class ItemController {
             @Parameter(hidden = true) @AuthenticationPrincipal UUID userId,
             @Parameter(description = "Id of the item") @PathVariable UUID id,
             @Valid @RequestBody UpdateItemStatusRequest request) {
-        return ApiResponse.ok(itemService.updateStatus(userId, id, request.status()), "Item status updated");
+        return ApiResponse.ok(itemService.updateStatus(userId, id, request.getStatus()), "Item status updated");
     }
 
     @DeleteMapping("/{id}")

@@ -1,9 +1,6 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.exception.BadRequestException;
-import com.group5.lostandfoundjava.exception.ForbiddenException;
-import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.item.CreateItemRequest;
 import com.group5.lostandfoundjava.dto.item.ItemResponse;
 import com.group5.lostandfoundjava.dto.item.ItemSearchFilter;
@@ -13,66 +10,51 @@ import com.group5.lostandfoundjava.entity.Item;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.ItemStatus;
 import com.group5.lostandfoundjava.entity.enums.ItemType;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.ForbiddenException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
+import com.group5.lostandfoundjava.mapper.ItemMapper;
 import com.group5.lostandfoundjava.repository.CategoryRepository;
 import com.group5.lostandfoundjava.repository.ItemRepository;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import com.group5.lostandfoundjava.repository.specification.ItemSpecifications;
 import com.group5.lostandfoundjava.service.ItemService;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
-
-    public ItemServiceImpl(
-            ItemRepository itemRepository, CategoryRepository categoryRepository, UserRepository userRepository) {
-        this.itemRepository = itemRepository;
-        this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
-    }
+    private final ItemMapper itemMapper;
 
     @Override
     @Transactional
     public ItemResponse create(UUID userId, CreateItemRequest request) {
         // Checked before anything is loaded, so a bad request costs no database round trips.
-        if (request.type() == ItemType.FOUND && request.rewardAmount() != null) {
+        if (request.getType() == ItemType.FOUND && request.getRewardAmount() != null) {
             throw new BadRequestException("rewardAmount is only allowed for LOST items");
         }
-        if (request.type() == ItemType.LOST && request.storageLocation() != null) {
+        if (request.getType() == ItemType.LOST && request.getStorageLocation() != null) {
             throw new BadRequestException("storageLocation is only allowed for FOUND items");
         }
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        Category category = categoryRepository
-                .findById(request.categoryId())
-                .orElseThrow(() -> new NotFoundException("Category not found"));
+        Category category = findCategory(request.getCategoryId());
 
-        Item item = new Item(user, category, request.type(), request.name().trim());
-        item.setDescription(request.description());
-        item.setBrand(request.brand());
-        item.setColor(request.color());
-        if (request.photoUrls() != null) {
-            item.getPhotoUrls().addAll(request.photoUrls());
-        }
-        item.setLocationLat(request.locationLat());
-        item.setLocationLng(request.locationLng());
-        item.setDateTime(request.dateTime());
-        item.setRewardAmount(request.rewardAmount());
-        item.setStorageLocation(request.storageLocation());
-
-        return ItemResponse.from(itemRepository.save(item));
+        return itemMapper.toResponse(itemRepository.save(itemMapper.toEntity(request, user, category)));
     }
 
     @Override
     @Transactional(readOnly = true)
     public ItemResponse get(UUID itemId) {
-        return ItemResponse.from(findItem(itemId));
+        return itemMapper.toResponse(findItem(itemId));
     }
 
     /** Every {@code null} field is skipped, so a client can send only what actually changed. */
@@ -81,54 +63,24 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponse update(UUID userId, UUID itemId, UpdateItemRequest request) {
         Item item = findOwnedItem(userId, itemId);
 
-        if (request.name() != null) {
-            if (request.name().isBlank()) {
-                throw new BadRequestException("Name must not be blank");
-            }
-            item.setName(request.name().trim());
+        // The rules below decide what a caller may ask for; the mapper only copies what survives
+        // them, which is why they live here rather than inside the mapping code.
+        if (request.getName() != null && request.getName().isBlank()) {
+            throw new BadRequestException("Name must not be blank");
         }
-        if (request.categoryId() != null) {
-            item.setCategory(categoryRepository
-                    .findById(request.categoryId())
-                    .orElseThrow(() -> new NotFoundException("Category not found")));
+        if (request.getRewardAmount() != null && item.getType() == ItemType.FOUND) {
+            throw new BadRequestException("rewardAmount is only allowed for LOST items");
         }
-        if (request.description() != null) {
-            item.setDescription(request.description());
-        }
-        if (request.brand() != null) {
-            item.setBrand(request.brand());
-        }
-        if (request.color() != null) {
-            item.setColor(request.color());
-        }
-        if (request.photoUrls() != null) {
-            // Replace rather than append: the client always sends the complete list.
-            item.getPhotoUrls().clear();
-            item.getPhotoUrls().addAll(request.photoUrls());
-        }
-        if (request.locationLat() != null) {
-            item.setLocationLat(request.locationLat());
-        }
-        if (request.locationLng() != null) {
-            item.setLocationLng(request.locationLng());
-        }
-        if (request.dateTime() != null) {
-            item.setDateTime(request.dateTime());
-        }
-        if (request.rewardAmount() != null) {
-            if (item.getType() == ItemType.FOUND) {
-                throw new BadRequestException("rewardAmount is only allowed for LOST items");
-            }
-            item.setRewardAmount(request.rewardAmount());
-        }
-        if (request.storageLocation() != null) {
-            if (item.getType() == ItemType.LOST) {
-                throw new BadRequestException("storageLocation is only allowed for FOUND items");
-            }
-            item.setStorageLocation(request.storageLocation());
+        if (request.getStorageLocation() != null && item.getType() == ItemType.LOST) {
+            throw new BadRequestException("storageLocation is only allowed for FOUND items");
         }
 
-        return ItemResponse.from(itemRepository.save(item));
+        // Resolved here because turning an id into an entity needs a repository and a 404 decision.
+        Category category = request.getCategoryId() == null ? null : findCategory(request.getCategoryId());
+
+        itemMapper.updateEntity(item, request, category);
+
+        return itemMapper.toResponse(itemRepository.save(item));
     }
 
     @Override
@@ -142,13 +94,13 @@ public class ItemServiceImpl implements ItemService {
     public PageResponse<ItemResponse> search(ItemSearchFilter filter, Pageable pageable) {
         return PageResponse.from(itemRepository
                 .findAll(ItemSpecifications.matching(filter), pageable)
-                .map(ItemResponse::from));
+                .map(itemMapper::toResponse));
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ItemResponse> listOwn(UUID userId, Pageable pageable) {
-        return PageResponse.from(itemRepository.findByUserId(userId, pageable).map(ItemResponse::from));
+        return PageResponse.from(itemRepository.findByUserId(userId, pageable).map(itemMapper::toResponse));
     }
 
     @Override
@@ -156,7 +108,13 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponse updateStatus(UUID userId, UUID itemId, ItemStatus status) {
         Item item = findOwnedItem(userId, itemId);
         item.setStatus(status);
-        return ItemResponse.from(itemRepository.save(item));
+        return itemMapper.toResponse(itemRepository.save(item));
+    }
+
+    private Category findCategory(UUID categoryId) {
+        return categoryRepository
+                .findById(categoryId)
+                .orElseThrow(() -> new NotFoundException("Category not found"));
     }
 
     private Item findItem(UUID itemId) {

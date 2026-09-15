@@ -1,66 +1,64 @@
 package com.group5.lostandfoundjava.service.impl;
 
-import com.group5.lostandfoundjava.exception.ConflictException;
-import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.category.CategoryRequest;
 import com.group5.lostandfoundjava.dto.category.CategoryResponse;
 import com.group5.lostandfoundjava.entity.Category;
+import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
+import com.group5.lostandfoundjava.mapper.CategoryMapper;
 import com.group5.lostandfoundjava.repository.CategoryRepository;
 import com.group5.lostandfoundjava.service.CategoryService;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
-
-    /** Not paged: there are a dozen categories and clients want all of them for a dropdown. */
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponse> list() {
-        return categoryRepository.findAll(Sort.by("name")).stream()
-                .map(CategoryResponse::from)
-                .toList();
+        return categoryMapper.toResponseList(categoryRepository.findAll(Sort.by("name")));
     }
 
     @Override
     @Transactional(readOnly = true)
     public CategoryResponse get(UUID id) {
-        return CategoryResponse.from(findCategory(id));
+        return categoryMapper.toResponse(findCategory(id));
     }
 
     @Override
     @Transactional
     public CategoryResponse create(CategoryRequest request) {
-        String name = request.name().trim();
-        if (categoryRepository.existsByNameIgnoreCase(name)) {
+        Category category = categoryMapper.toEntity(request);
+
+        if (categoryRepository.existsByNameIgnoreCase(category.getName())) {
             throw new ConflictException("Category with this name already exists");
         }
-        return CategoryResponse.from(categoryRepository.save(new Category(name, request.iconUrl())));
+
+        return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
     public CategoryResponse update(UUID id, CategoryRequest request) {
         Category category = findCategory(id);
-        String newName = request.name().trim();
+        String newName = request.getName() == null ? null : request.getName().trim();
 
         // Renaming to a different spelling of its own name is allowed; clashing with another is not.
         if (!category.getName().equalsIgnoreCase(newName) && categoryRepository.existsByNameIgnoreCase(newName)) {
             throw new ConflictException("Category with this name already exists");
         }
 
-        category.setName(newName);
-        category.setIconUrl(request.iconUrl());
-        return CategoryResponse.from(categoryRepository.save(category));
+        categoryMapper.updateEntity(category, request);
+        return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
     /**

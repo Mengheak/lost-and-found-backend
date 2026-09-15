@@ -9,22 +9,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Who may call what.
- *
- * <p>{@code @EnableMethodSecurity} additionally turns on {@code @PreAuthorize}, which the category
- * and admin controllers use for rules that are easier to read next to the method they protect.
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -44,14 +40,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
         http
 
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                // No server-side sessions — every request proves who it is with its own token.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Listed before the blanket /api/auth/** rule below, because the first
+                        // matching rule wins and logging out is the one auth call that needs a token.
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout")
+                        .authenticated()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/swagger-ui.html",
@@ -77,12 +77,12 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(ex -> {
-                    // Not signed in -> 401. Signed in but not allowed -> 403. Both in our envelope.
                     ex.authenticationEntryPoint((request, response, authException) ->
                             writeError(response, HttpServletResponse.SC_UNAUTHORIZED, "Authentication required"));
                     ex.accessDeniedHandler((request, response, deniedException) ->
                             writeError(response, HttpServletResponse.SC_FORBIDDEN, "Access denied"));
                 })
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

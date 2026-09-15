@@ -1,5 +1,7 @@
 package com.group5.lostandfoundjava.controller;
 
+import static com.group5.lostandfoundjava.config.OpenApiConfig.BEARER_SCHEME;
+
 import com.group5.lostandfoundjava.common.ApiResponse;
 import com.group5.lostandfoundjava.dto.auth.AuthResponse;
 import com.group5.lostandfoundjava.dto.auth.LoginRequest;
@@ -8,9 +10,12 @@ import com.group5.lostandfoundjava.dto.auth.RegisterRequest;
 import com.group5.lostandfoundjava.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -97,5 +102,25 @@ public class AuthController {
     })
     public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         return ApiResponse.ok(authService.refresh(request), "Token refreshed");
+    }
+
+    @PostMapping("/logout")
+    @SecurityRequirement(name = BEARER_SCHEME)
+    @Operation(
+            summary = "Revoke every token belonging to the caller",
+            description = "Access tokens are self-contained and would otherwise stay usable until they "
+                    + "expire. This marks all of the caller's issued tokens as revoked, so they are refused "
+                    + "from the next request onwards — on the REST API and on the chat WebSocket alike.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "All of the caller's tokens were revoked"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "401",
+                description = "No valid access token was supplied")
+    })
+    public ApiResponse<Void> logout(@AuthenticationPrincipal UUID userId) {
+        authService.logout(userId);
+        return ApiResponse.message("Logged out successfully");
     }
 }

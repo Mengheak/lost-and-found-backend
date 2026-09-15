@@ -1,79 +1,68 @@
 package com.group5.lostandfoundjava.service.impl;
 
-import com.group5.lostandfoundjava.exception.ConflictException;
-import com.group5.lostandfoundjava.exception.TooManyRequestsException;
-import com.group5.lostandfoundjava.exception.UnauthorizedException;
 import com.group5.lostandfoundjava.dto.auth.AuthResponse;
 import com.group5.lostandfoundjava.dto.auth.LoginRequest;
 import com.group5.lostandfoundjava.dto.auth.RefreshTokenRequest;
 import com.group5.lostandfoundjava.dto.auth.RegisterRequest;
-import com.group5.lostandfoundjava.dto.user.UserResponse;
 import com.group5.lostandfoundjava.entity.User;
-import com.group5.lostandfoundjava.entity.enums.Role;
+import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.TooManyRequestsException;
+import com.group5.lostandfoundjava.exception.UnauthorizedException;
+import com.group5.lostandfoundjava.mapper.AuthMapper;
+import com.group5.lostandfoundjava.mapper.UserMapper;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import com.group5.lostandfoundjava.security.JwtProvider;
 import com.group5.lostandfoundjava.security.LoginAttemptService;
 import com.group5.lostandfoundjava.service.AuthService;
+import com.group5.lostandfoundjava.service.TokenService;
 import io.jsonwebtoken.Claims;
-import java.util.Optional;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final LoginAttemptService loginAttemptService;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
+    private final UserMapper userMapper;
+    private final AuthMapper authMapper;
 
-    /**
-     * Spring passes these in automatically ("constructor injection"). Making the fields {@code final}
-     * guarantees they are set exactly once and never change.
-     */
-    public AuthServiceImpl(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtProvider jwtProvider,
-            LoginAttemptService loginAttemptService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtProvider = jwtProvider;
-        this.loginAttemptService = loginAttemptService;
-    }
-
-    /**
-     * Creates the account and returns tokens straight away, so the client does not have to log in as
-     * a second step. New accounts are always plain {@code USER}s — there is no way to register as an
-     * admin.
-     */
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        String email = request.email().trim().toLowerCase();
-        if (userRepository.existsByEmail(email)) {
+        User user = userMapper.toEntity(request, passwordEncoder.encode(request.getPassword()));
+
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new ConflictException("Email is already registered");
         }
 
-        User user = userRepository.save(new User(
-                request.name().trim(),
-                email,
-                request.phone() == null ? null : request.phone().trim(),
-                passwordEncoder.encode(request.password()),
-                Role.USER));
-
-        return toAuthResponse(user);
+        return issueTokens(userRepository.save(user));
     }
 
     /**
      * An unknown email and a wrong password produce exactly the same error. Saying "no such user"
      * would let anyone check which email addresses are registered here.
+     *
+     * <p>The password comparison itself is delegated to Spring Security's
+     * {@link AuthenticationManager}, which also hides whether the account existed at all — so the
+     * "unknown email" and "wrong password" paths cost the same time as well as returning the same
+     * message.
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
-        String email = request.email().trim().toLowerCase();
+        String email = request.getEmail().trim().toLowerCase();
 
         Long lockoutSeconds = loginAttemptService.lockoutSecondsRemaining(email);
         if (lockoutSeconds != null) {
@@ -81,43 +70,75 @@ public class AuthServiceImpl implements AuthService {
             throw new TooManyRequestsException("Too many failed attempts. Try again in " + minutes + " minute(s).");
         }
 
-        Optional<User> found = userRepository.findByEmail(email);
-        if (found.isEmpty() || !passwordEncoder.matches(request.password(), found.get().getPasswordHash())) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, request.getPassword()));
+        } catch (AuthenticationException ex) {
             loginAttemptService.recordFailure(email);
             throw new UnauthorizedException("Invalid email or password");
         }
 
+        // The credentials are good, so the account is certain to exist by this point.
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+
         loginAttemptService.recordSuccess(email);
-        return toAuthResponse(found.get());
+
+        // Signing in afresh ends the account's other sessions, so a password that has leaked cannot
+        // keep being used from somewhere else once the owner logs in again.
+        tokenService.revokeAll(user.getId());
+
+        return issueTokens(user);
     }
 
     /**
      * The role is re-read from the database here rather than copied out of the refresh token, so a
      * promotion or demotion takes effect at the next refresh instead of only at the next login.
+     *
+     * <p>The presented refresh token is rotated: it is revoked as the new pair is issued, so a
+     * refresh token that is stolen and replayed after the real client has already used it is
+     * rejected. Sessions on the user's other devices are left alone.
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse refresh(RefreshTokenRequest request) {
-        Claims claims = jwtProvider.parse(request.refreshToken());
+        String refreshToken = request.getRefreshToken();
+
+        Claims claims = jwtProvider.parse(refreshToken);
         if (claims == null) {
             throw new UnauthorizedException("Invalid or expired refresh token");
         }
         if (!jwtProvider.isRefreshToken(claims)) {
             throw new UnauthorizedException("Provided token is not a refresh token");
         }
+        // Catches a token that is still within its lifetime but was revoked by a logout.
+        if (!tokenService.isActive(refreshToken)) {
+            throw new UnauthorizedException("Refresh token is no longer valid");
+        }
 
         User user = userRepository
                 .findById(jwtProvider.userIdFrom(claims))
                 .orElseThrow(() -> new UnauthorizedException("User no longer exists"));
 
-        return toAuthResponse(user);
+        tokenService.revoke(refreshToken);
+
+        return issueTokens(user);
     }
 
-    private AuthResponse toAuthResponse(User user) {
-        return AuthResponse.of(
-                jwtProvider.generateAccessToken(user.getId(), user.getRole()),
-                jwtProvider.generateRefreshToken(user.getId()),
-                jwtProvider.getAccessTokenTtlSeconds(),
-                UserResponse.from(user));
+    @Override
+    @Transactional
+    public void logout(UUID userId) {
+        tokenService.revokeAll(userId);
+    }
+
+    /** Issues a fresh pair, records both so they can be revoked, and builds the response. */
+    private AuthResponse issueTokens(User user) {
+        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole());
+        String refreshToken = jwtProvider.generateRefreshToken(user.getId());
+
+        tokenService.savePair(user, accessToken, refreshToken);
+
+        return authMapper.toResponse(user, accessToken, refreshToken, jwtProvider.getAccessTokenTtlSeconds());
     }
 }

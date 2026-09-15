@@ -97,6 +97,10 @@ public class JwtProvider {
         JwtBuilder builder =
                 Jwts.builder()
                         .subject(userId.toString())
+                        // A JWT ID makes every token unique. Without it, two tokens minted for the
+                        // same user in the same second are byte-identical, because iat and exp only
+                        // have second precision — and the token store keys on the token itself.
+                        .id(UUID.randomUUID().toString())
                         .claim(CLAIM_TYPE, type)
                         .issuedAt(Date.from(now))
                         .expiration(Date.from(now.plus(ttl)));

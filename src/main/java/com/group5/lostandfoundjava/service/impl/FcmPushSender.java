@@ -37,8 +37,7 @@ public class FcmPushSender implements PushSender {
                     .build();
             firebaseMessaging.send(message);
         } catch (Exception ex) {
-            // A push is a nice-to-have. Failing to deliver one must never fail the request that
-            // triggered it, so the error is logged and swallowed.
+
             log.warn("Failed to send FCM push to user {}: {}", userId, ex.getMessage());
         }
     }

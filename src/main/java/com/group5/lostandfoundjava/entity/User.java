@@ -1,24 +1,39 @@
 package com.group5.lostandfoundjava.entity;
 
 import com.group5.lostandfoundjava.entity.enums.Role;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * A registered account.
  *
  * <p>Only the bcrypt hash of the password is stored — the plain password is never written anywhere.
+ *
+ * <p>The entity implements {@link UserDetails} so Spring Security's own
+ * {@code DaoAuthenticationProvider} can check a password against it directly, instead of every call
+ * site re-implementing "load the user, then compare hashes". Spring Security's notion of a username
+ * is this application's email.
  */
 @Getter
 @Setter
 @Entity
 @Table(name = "users")
-public class User extends BaseEntity {
+public class User extends BaseEntity implements UserDetails {
 
     @Column(nullable = false)
     private String name;
@@ -41,6 +56,14 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
+    /**
+     * Lazy, and excluded from {@code toString}: the token list is only ever touched when revoking,
+     * and cascading the delete keeps a removed account from leaving usable tokens behind.
+     */
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Token> tokens = new ArrayList<>();
+
     /** Required by JPA. Application code should use the constructor below. */
     protected User() {}
 
@@ -50,5 +73,45 @@ public class User extends BaseEntity {
         this.phone = phone;
         this.passwordHash = passwordHash;
         this.role = role;
+    }
+
+    // --- UserDetails ---
+
+    /** The role's own authority plus one for each permission it carries. */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return role == null ? Collections.emptyList() : role.getAuthorities();
+    }
+
+    /** Spring Security asks for "the password"; what is stored is its bcrypt hash. */
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    /** Spring Security's "username" is the email in this application. */
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

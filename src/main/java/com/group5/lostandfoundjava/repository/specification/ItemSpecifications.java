@@ -25,34 +25,34 @@ public final class ItemSpecifications {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.type() != null) {
-                predicates.add(cb.equal(root.get("type"), filter.type()));
+            if (filter.getType() != null) {
+                predicates.add(cb.equal(root.get("type"), filter.getType()));
             }
-            if (filter.status() != null) {
-                predicates.add(cb.equal(root.get("status"), filter.status()));
+            if (filter.getStatus() != null) {
+                predicates.add(cb.equal(root.get("status"), filter.getStatus()));
             }
-            if (filter.categoryId() != null) {
-                predicates.add(cb.equal(root.get("category").get("id"), filter.categoryId()));
+            if (filter.getCategoryId() != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), filter.getCategoryId()));
             }
-            if (hasText(filter.brand())) {
-                predicates.add(cb.like(cb.lower(root.get("brand")), contains(filter.brand())));
+            if (hasText(filter.getBrand())) {
+                predicates.add(cb.like(cb.lower(root.get("brand")), contains(filter.getBrand())));
             }
-            if (hasText(filter.color())) {
-                predicates.add(cb.like(cb.lower(root.get("color")), contains(filter.color())));
+            if (hasText(filter.getColor())) {
+                predicates.add(cb.like(cb.lower(root.get("color")), contains(filter.getColor())));
             }
-            if (hasText(filter.keyword())) {
+            if (hasText(filter.getKeyword())) {
                 // A keyword matches either the title or the description.
-                String like = contains(filter.keyword());
+                String like = contains(filter.getKeyword());
                 predicates.add(
                         cb.or(
                                 cb.like(cb.lower(root.get("name")), like),
                                 cb.like(cb.lower(root.get("description")), like)));
             }
-            if (filter.dateFrom() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("dateTime"), filter.dateFrom()));
+            if (filter.getDateFrom() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("dateTime"), filter.getDateFrom()));
             }
-            if (filter.dateTo() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("dateTime"), filter.dateTo()));
+            if (filter.getDateTo() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("dateTime"), filter.getDateTo()));
             }
 
             // An empty list means "no filters at all", which cb.and() turns into "always true".

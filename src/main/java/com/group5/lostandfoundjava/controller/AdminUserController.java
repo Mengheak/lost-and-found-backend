@@ -118,6 +118,6 @@ public class AdminUserController {
             @Parameter(hidden = true) @AuthenticationPrincipal UUID actingAdminId,
             @Parameter(description = "Id of the user whose role should change") @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRoleRequest request) {
-        return ApiResponse.ok(adminUserService.updateRole(actingAdminId, id, request.role()), "Role updated");
+        return ApiResponse.ok(adminUserService.updateRole(actingAdminId, id, request.getRole()), "Role updated");
     }
 }

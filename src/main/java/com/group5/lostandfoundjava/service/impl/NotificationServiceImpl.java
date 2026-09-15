@@ -1,36 +1,35 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.exception.ForbiddenException;
-import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.notification.NotificationResponse;
 import com.group5.lostandfoundjava.entity.Notification;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.NotificationType;
+import com.group5.lostandfoundjava.exception.ForbiddenException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
+import com.group5.lostandfoundjava.mapper.NotificationMapper;
 import com.group5.lostandfoundjava.repository.NotificationRepository;
 import com.group5.lostandfoundjava.service.NotificationService;
 import com.group5.lostandfoundjava.service.PushSender;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final PushSender pushSender;
-
-    public NotificationServiceImpl(NotificationRepository notificationRepository, PushSender pushSender) {
-        this.notificationRepository = notificationRepository;
-        this.pushSender = pushSender;
-    }
+    private final NotificationMapper notificationMapper;
 
     /** Stores the notification for the in-app feed, then mirrors it to the device as a push. */
     @Override
     @Transactional
     public void notify(User user, NotificationType type, String message) {
-        notificationRepository.save(new Notification(user, type, message));
+        notificationRepository.save(notificationMapper.toEntity(user, type, message));
         pushSender.sendToUser(user.getId(), title(type), message);
     }
 
@@ -38,7 +37,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional(readOnly = true)
     public PageResponse<NotificationResponse> list(UUID userId, Pageable pageable) {
         return PageResponse.from(
-                notificationRepository.findByUserId(userId, pageable).map(NotificationResponse::from));
+                notificationRepository.findByUserId(userId, pageable).map(notificationMapper::toResponse));
     }
 
     @Override
@@ -53,7 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         notification.setRead(true);
-        return NotificationResponse.from(notificationRepository.save(notification));
+        return notificationMapper.toResponse(notificationRepository.save(notification));
     }
 
     @Override

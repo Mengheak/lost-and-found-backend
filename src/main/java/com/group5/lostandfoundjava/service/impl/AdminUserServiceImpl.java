@@ -1,27 +1,27 @@
 package com.group5.lostandfoundjava.service.impl;
 
 import com.group5.lostandfoundjava.common.PageResponse;
-import com.group5.lostandfoundjava.exception.BadRequestException;
-import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.dto.user.UserResponse;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.Role;
+import com.group5.lostandfoundjava.exception.BadRequestException;
+import com.group5.lostandfoundjava.exception.NotFoundException;
+import com.group5.lostandfoundjava.mapper.UserMapper;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import com.group5.lostandfoundjava.service.AdminUserService;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepository userRepository;
-
-    public AdminUserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserMapper userMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -32,13 +32,13 @@ public class AdminUserServiceImpl implements AdminUserService {
                 ? userRepository.findAll(pageable)
                 : userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(term, term, pageable);
 
-        return PageResponse.from(page.map(UserResponse::from));
+        return PageResponse.from(page.map(userMapper::toResponse));
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponse get(UUID userId) {
-        return UserResponse.from(findUser(userId));
+        return userMapper.toResponse(findUser(userId));
     }
 
     /**
@@ -55,7 +55,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         // Setting the role a user already has changes nothing, so it needs no guarding.
         if (user.getRole() == role) {
-            return UserResponse.from(user);
+            return userMapper.toResponse(user);
         }
         if (user.getId().equals(actingAdminId)) {
             throw new BadRequestException("You cannot change your own role");
@@ -65,7 +65,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
 
         user.setRole(role);
-        return UserResponse.from(userRepository.save(user));
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     private User findUser(UUID userId) {

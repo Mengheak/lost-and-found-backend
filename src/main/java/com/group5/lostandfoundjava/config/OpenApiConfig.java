@@ -10,12 +10,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Describes the API for Swagger UI, served at {@code /swagger-ui.html}.
- *
- * <p>springdoc discovers the endpoints by itself; this class only adds the parts it cannot guess —
- * the introduction, the "Authorize" button, and human-readable group names.
- */
+
 @Configuration
 public class OpenApiConfig {
 
