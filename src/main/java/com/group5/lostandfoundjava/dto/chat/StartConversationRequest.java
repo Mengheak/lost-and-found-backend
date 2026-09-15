@@ -14,6 +14,6 @@ public class StartConversationRequest {
 
     private UUID itemId;
 
-    /** Optional: left out, the conversation is started with whoever reported the item. */
+    // Optional: left out, the conversation is started with whoever reported the item
     private UUID otherUserId;
 }

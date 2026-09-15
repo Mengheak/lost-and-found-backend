@@ -41,13 +41,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         return userMapper.toResponse(findUser(userId));
     }
 
-    /**
-     * Two guards keep the admin area from becoming unreachable: an admin cannot change their own
-     * role, and the last remaining admin cannot be demoted.
-     *
-     * <p>The affected user keeps their old permissions until their next login or token refresh,
-     * because the role is baked into the access token when it is issued.
-     */
+    // Two guards keep the admin area from becoming unreachable: an admin cannot change their own
     @Override
     @Transactional
     public UserResponse updateRole(UUID actingAdminId, UUID userId, Role role) {

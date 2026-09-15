@@ -27,14 +27,13 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(findUser(userId));
     }
 
-    /** A {@code null} field means "not sent", so it keeps its current value. */
+    // A null field means "not sent", so it keeps its current value
     @Override
     @Transactional
     public UserResponse updateProfile(UUID userId, UpdateProfileRequest request) {
         User user = findUser(userId);
 
-        // Checked here rather than in the mapper: an empty name is a rule about what callers may
-        // ask for, not part of copying one object onto another.
+        // Checked here rather than in the mapper: an empty name is a rule about what callers may ask
         if (request.getName() != null && request.getName().isBlank()) {
             throw new BadRequestException("Name must not be blank");
         }

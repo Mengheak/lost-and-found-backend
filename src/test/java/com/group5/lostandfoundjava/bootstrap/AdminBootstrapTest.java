@@ -19,10 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-/**
- * The default-admin rules, and above all the promise that an existing account's password is never
- * silently overwritten.
- */
+// The default-admin rules, and above all the promise that an existing account's password
 class AdminBootstrapTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);

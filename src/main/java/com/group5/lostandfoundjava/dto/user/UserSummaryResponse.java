@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** The few user fields shown next to something else — an item, a message, a rating. */
+// The few user fields shown next to something else — an item, a message, a rating
 @Data
 @Builder
 @NoArgsConstructor

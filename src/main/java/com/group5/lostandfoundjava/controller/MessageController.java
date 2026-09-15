@@ -28,12 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Messages inside a conversation.
- *
- * <p>This is the plain HTTP way to chat, used for loading history and as a fallback when a
- * WebSocket is not available. Either way the message ends up broadcast to the live thread.
- */
+// Messages inside a conversation
 @RestController
 @RequestMapping("/api/conversations/{conversationId}/messages")
 @Tag(name = "Messages")

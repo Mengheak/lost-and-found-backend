@@ -12,14 +12,14 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-/** One entry in a user's in-app notification feed. */
+// One entry in a user's in-app notification feed
 @Getter
 @Setter
 @Entity
 @Table(name = "notifications")
 public class Notification extends BaseEntity {
 
-    /** The person who receives the notification, not the person who caused it. */
+    // The person who receives the notification, not the person who caused
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,7 +34,7 @@ public class Notification extends BaseEntity {
     @Column(name = "is_read", nullable = false)
     private boolean read = false;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected Notification() {}
 
     public Notification(User user, NotificationType type, String message) {

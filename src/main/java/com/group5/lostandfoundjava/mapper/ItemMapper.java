@@ -12,17 +12,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * Translates between {@link Item} and its DTOs.
- *
- * <p>The two relations an item has — its reporter and its category — cannot be resolved from a
- * request on their own, because turning an id into an entity needs a repository and a "not found"
- * decision. So the service looks them up and hands them in already resolved, and this class stays a
- * pure field-copier with no database access of its own.
- *
- * <p>The same division applies to the rules about which fields belong on a LOST versus a FOUND item:
- * those are validated in the service before anything gets copied here.
- */
+// Translates between Item and its DTOs
 @Component
 @RequiredArgsConstructor
 public class ItemMapper {
@@ -49,12 +39,7 @@ public class ItemMapper {
         return item;
     }
 
-    /**
-     * Copies a partial update onto an existing item. Every {@code null} field is skipped.
-     *
-     * @param category the already-resolved replacement category, or {@code null} to keep the
-     *     current one
-     */
+    // Copies a partial update onto an existing item
     public void updateEntity(Item item, UpdateItemRequest request, Category category) {
         if (item == null || request == null) {
             return;

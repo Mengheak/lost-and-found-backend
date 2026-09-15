@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MessageMapper {
 
-    /**
-     * The sender is taken from the authenticated conversation participant, never from the request
-     * body, so a client cannot post a message as somebody else.
-     */
+    // The sender is taken from the authenticated conversation participant
     public Message toEntity(SendMessageRequest request, Conversation conversation, User sender) {
         if (request == null) {
             return null;

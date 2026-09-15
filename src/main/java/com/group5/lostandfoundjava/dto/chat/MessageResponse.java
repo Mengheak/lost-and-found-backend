@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** One chat message. This is also exactly what WebSocket subscribers receive. */
+// One chat message
 @Data
 @Builder
 @NoArgsConstructor

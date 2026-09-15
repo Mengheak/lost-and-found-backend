@@ -5,7 +5,7 @@ import com.group5.lostandfoundjava.dto.category.CategoryResponse;
 import java.util.List;
 import java.util.UUID;
 
-/** The item taxonomy. Anyone may read it; only admins may change it. */
+// The item taxonomy
 public interface CategoryService {
 
     List<CategoryResponse> list();

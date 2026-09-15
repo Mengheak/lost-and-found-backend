@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Chat threads between two users about an item. */
+// Chat threads between two users about an item
 @RestController
 @RequestMapping("/api/conversations")
 @Tag(name = "Conversations")
@@ -39,7 +39,7 @@ public class ConversationController {
         this.conversationService = conversationService;
     }
 
-    /** Returns 200 rather than 201, because it may well have returned an existing thread. */
+    // Returns 200 rather than 201, because it may well have returned an existing thread
     @PostMapping
     @Operation(
             summary = "Start a conversation about an item, or get the existing one",

@@ -29,7 +29,7 @@ public class Message extends BaseEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected Message() {}
 
     public Message(Conversation conversation, User sender, String text, String imageUrl) {

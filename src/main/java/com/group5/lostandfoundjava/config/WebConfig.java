@@ -8,13 +8,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * CORS: which websites a browser may call this API from.
- *
- * <p>Without this, the browser blocks requests from the Angular dev server because it runs on a
- * different port. Credentials are not allowed, since the client authenticates with a header rather
- * than with cookies.
- */
+// CORS: which websites a browser may call this API
 @Configuration
 public class WebConfig {
 

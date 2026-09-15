@@ -12,16 +12,7 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-/**
- * The WebSocket equivalent of {@link JwtAuthenticationFilter}.
- *
- * <p>A WebSocket has no HTTP headers after the handshake, so the token is checked once, on the STOMP
- * CONNECT frame. Unlike the HTTP filter this one <em>rejects</em> the connection when the token is
- * missing or invalid — there is no such thing as an anonymous chat session.
- *
- * <p>The authenticated user is attached to the session, which is what lets
- * {@link com.group5.lostandfoundjava.controller.ChatWebSocketController} receive a {@code Principal}.
- */
+// The WebSocket equivalent of JwtAuthenticationFilter
 @Component
 public class AuthChannelInterceptor implements ChannelInterceptor {
 

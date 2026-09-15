@@ -8,14 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-/**
- * Database access for {@link Item}.
- *
- * <p>{@link JpaSpecificationExecutor} adds {@code findAll(Specification, Pageable)}, which is what
- * the search endpoint uses: its eight optional filters would need 256 different method names
- * otherwise. See
- * {@link com.group5.lostandfoundjava.repository.specification.ItemSpecifications}.
- */
+// Database access for Item
 @Repository
 public interface ItemRepository extends JpaRepository<Item, UUID>, JpaSpecificationExecutor<Item> {
 

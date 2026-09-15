@@ -45,11 +45,11 @@ public class CreateItemRequest {
 
     private Instant dateTime;
 
-    /** Only meaningful on a LOST item; the service rejects it on a FOUND one. */
+    // Only meaningful on a LOST item; the service rejects it on a FOUND one
     @PositiveOrZero(message = "rewardAmount must not be negative")
     private BigDecimal rewardAmount;
 
-    /** Only meaningful on a FOUND item; the service rejects it on a LOST one. */
+    // Only meaningful on a FOUND item; the service rejects it on a LOST one
     @Size(max = 255, message = "storageLocation length must be less than 255")
     private String storageLocation;
 }

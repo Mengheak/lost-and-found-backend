@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The caller's in-app notification feed. */
+// The caller's in-app notification feed
 @RestController
 @RequestMapping("/api/notifications")
 @Tag(name = "Notifications")

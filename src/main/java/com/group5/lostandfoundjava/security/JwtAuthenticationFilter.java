@@ -14,22 +14,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Runs before every request: if there is a valid {@code Authorization: Bearer ...} header, the
- * caller is recorded as authenticated for the rest of the request.
- *
- * <p>A token has to clear three checks to count. It must parse and verify against our signing key
- * and not be past its expiry; it must be an <em>access</em> token, so a refresh token cannot be used
- * to call the API; and it must still be active in the token store, which is what makes logging out
- * take effect immediately rather than whenever the token would have expired on its own.
- *
- * <p>The filter never rejects anything. A missing or bad token simply leaves the request anonymous,
- * and Spring Security's own rules decide afterwards whether that is acceptable — which is what makes
- * endpoints like the public item search work.
- *
- * <p>The principal stored here is the user's {@link java.util.UUID}. That is why controllers can
- * write {@code @AuthenticationPrincipal UUID userId}.
- */
+// Runs before every request: if there is a valid Authorization: Bearer
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -56,8 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length()).trim();
             Claims claims = jwtProvider.parse(token);
 
-            // The signature check is cheap and the store lookup is a database round trip, so the
-            // token is only looked up once it has already proved to be one of ours.
+            // The signature check is cheap and the store lookup is a database round trip
             if (claims != null && jwtProvider.isAccessToken(claims) && tokenService.isActive(token)) {
                 var authentication = new UsernamePasswordAuthenticationToken(
                         jwtProvider.userIdFrom(claims),

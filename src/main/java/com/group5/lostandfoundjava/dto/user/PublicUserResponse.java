@@ -7,10 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Somebody else's profile. Carries no email, phone or role: this is served to anyone, including
- * callers who are not logged in.
- */
+// Somebody else's profile
 @Data
 @Builder
 @NoArgsConstructor

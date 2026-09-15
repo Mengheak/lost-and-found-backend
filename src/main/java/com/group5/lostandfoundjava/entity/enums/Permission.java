@@ -3,13 +3,7 @@ package com.group5.lostandfoundjava.entity.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * A single fine-grained capability, granted to a caller through their {@link Role}.
- *
- * <p>Roles answer "who is this?", permissions answer "what may they do?". Keeping the two apart
- * means an endpoint can require {@code admin:delete} without caring which role happens to carry it,
- * so re-shuffling permissions between roles later touches no endpoint.
- */
+// A single fine-grained capability, granted to a caller through their Role
 @RequiredArgsConstructor
 public enum Permission {
     ADMIN_READ("admin:read"),

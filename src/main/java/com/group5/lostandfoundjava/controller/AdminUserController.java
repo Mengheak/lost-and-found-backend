@@ -28,13 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * User administration.
- *
- * <p>{@code @PreAuthorize} on the class applies to every method. The URL prefix is also locked down
- * in {@link com.group5.lostandfoundjava.config.SecurityConfig}; having both is deliberate, so
- * neither one alone is the single thing standing between a stranger and the admin area.
- */
+// User administration
 @RestController
 @RequestMapping("/api/admin/users")
 @PreAuthorize("hasRole('ADMIN')")

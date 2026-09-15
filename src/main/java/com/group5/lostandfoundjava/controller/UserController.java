@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Own profile and public profiles of other users. */
+// Own profile and public profiles of other users
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -33,12 +33,7 @@ public class UserController {
 
     private final UserService userService;
 
-    /**
-     * {@code @AuthenticationPrincipal} hands us the id that
-     * {@link com.group5.lostandfoundjava.security.JwtAuthenticationFilter} put in the security
-     * context. Taking it from the token instead of from a path parameter is what makes this
-     * endpoint safe: a caller can only ever read their own profile.
-     */
+    // @AuthenticationPrincipal hands us the id that JwtAuthenticationFilter put in the security
     @GetMapping("/me")
     @SecurityRequirement(name = BEARER_SCHEME)
     @Operation(

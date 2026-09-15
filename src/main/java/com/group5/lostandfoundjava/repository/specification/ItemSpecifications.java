@@ -7,16 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 
-/**
- * Builds the WHERE clause of the item search.
- *
- * <p>A {@link Specification} is a small object that knows how to add conditions to a query. Each
- * filter that the caller actually supplied contributes one condition; the rest are skipped. All the
- * conditions are then joined with AND.
- *
- * <p>The class is final with a private constructor because it only holds a static helper — there is
- * nothing to instantiate.
- */
+// Builds the WHERE clause of the item search
 public final class ItemSpecifications {
 
     private ItemSpecifications() {}

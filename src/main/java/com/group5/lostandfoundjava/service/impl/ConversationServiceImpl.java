@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Chat threads between two users about an item. */
+// Chat threads between two users about an item
 @Service
 @RequiredArgsConstructor
 public class ConversationServiceImpl implements ConversationService {

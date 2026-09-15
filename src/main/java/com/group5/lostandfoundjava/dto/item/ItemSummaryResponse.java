@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Just enough of an item to label a conversation with it. */
+// Just enough of an item to label a conversation
 @Data
 @Builder
 @NoArgsConstructor

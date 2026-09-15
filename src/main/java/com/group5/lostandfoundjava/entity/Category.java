@@ -18,7 +18,7 @@ public class Category extends BaseEntity {
     @Column(name = "icon_url")
     private String iconUrl;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected Category() {}
 
     public Category(String name, String iconUrl) {

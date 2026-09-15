@@ -13,7 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** A full item, including a compact view of its reporter and its category. */
+// A full item, including a compact view of its reporter and its category
 @Data
 @Builder
 @NoArgsConstructor

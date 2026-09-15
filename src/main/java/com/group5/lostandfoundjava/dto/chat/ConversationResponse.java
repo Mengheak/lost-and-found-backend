@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** A chat thread between two users about one item. */
+// A chat thread between two users about one item
 @Data
 @Builder
 @NoArgsConstructor

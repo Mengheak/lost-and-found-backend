@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Body of {@code POST /api/ratings}. */
+// Body of POST /api/ratings
 @Data
 @Builder
 @NoArgsConstructor // required by Jackson to deserialise @RequestBody

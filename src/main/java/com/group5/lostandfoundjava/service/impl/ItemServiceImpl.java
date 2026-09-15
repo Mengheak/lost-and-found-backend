@@ -57,14 +57,13 @@ public class ItemServiceImpl implements ItemService {
         return itemMapper.toResponse(findItem(itemId));
     }
 
-    /** Every {@code null} field is skipped, so a client can send only what actually changed. */
+    // Every null field is skipped, so a client can send only what actually changed
     @Override
     @Transactional
     public ItemResponse update(UUID userId, UUID itemId, UpdateItemRequest request) {
         Item item = findOwnedItem(userId, itemId);
 
-        // The rules below decide what a caller may ask for; the mapper only copies what survives
-        // them, which is why they live here rather than inside the mapping code.
+        // The rules below decide what a caller may ask for; the mapper only copies what survives them
         if (request.getName() != null && request.getName().isBlank()) {
             throw new BadRequestException("Name must not be blank");
         }
@@ -121,10 +120,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
     }
 
-    /**
-     * Loads an item and refuses unless the caller reported it. Ownership is checked here, in one
-     * place, instead of being repeated in every method that changes an item.
-     */
+    // Loads an item and refuses unless the caller reported
     private Item findOwnedItem(UUID userId, UUID itemId) {
         Item item = findItem(itemId);
         if (!item.getUser().getId().equals(userId)) {

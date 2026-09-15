@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationMapper {
 
-    /**
-     * Notifications are raised by the application rather than posted by a client, so there is no
-     * request DTO to map from — the three things a notification needs are passed directly.
-     */
+    // Notifications are raised by the application rather than posted by a client
     public Notification toEntity(User user, NotificationType type, String message) {
         return new Notification(user, type, message);
     }

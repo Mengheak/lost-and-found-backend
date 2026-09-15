@@ -1,6 +1,6 @@
 package com.group5.lostandfoundjava.exception;
 
-/** Translated into HTTP 400 — the request itself is wrong — bad values, impossible combinations. */
+// Translated into HTTP 400 — the request itself is wrong — bad values, impossible combinations
 public class BadRequestException extends ApiException {
 
     public BadRequestException(String message) {

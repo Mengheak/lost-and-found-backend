@@ -17,13 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Chooses which {@link PushSender} the application uses.
- *
- * <p>Push notifications are optional: without a Firebase credentials file the app starts normally
- * with a no-op sender. Picking the implementation here means no other class ever has to ask whether
- * push is switched on.
- */
+// Chooses which PushSender the application uses
 @Configuration
 public class PushConfig {
 

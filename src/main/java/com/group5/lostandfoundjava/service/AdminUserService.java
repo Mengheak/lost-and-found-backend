@@ -6,7 +6,7 @@ import com.group5.lostandfoundjava.entity.enums.Role;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 
-/** User administration. Every method here is reachable only by an admin. */
+// User administration
 public interface AdminUserService {
 
     PageResponse<UserResponse> list(String keyword, Pageable pageable);

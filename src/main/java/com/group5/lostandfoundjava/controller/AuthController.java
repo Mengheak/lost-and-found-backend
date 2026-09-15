@@ -22,17 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The three public endpoints under {@code /api/auth}.
- *
- * <p>Controllers stay thin on purpose: they receive the request, hand it to a service, and wrap the
- * result in the {@link ApiResponse} envelope. All the rules live in the service layer, where they
- * can be unit-tested without starting a web server.
- *
- * <p>Swagger has an annotation called {@code ApiResponse} too. Java cannot rename an import, so the
- * documentation annotations below are written out in full to keep them apart from our own
- * {@link ApiResponse} record. They describe the API in Swagger UI and change no behaviour.
- */
+// The three public endpoints under /api/auth
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication")

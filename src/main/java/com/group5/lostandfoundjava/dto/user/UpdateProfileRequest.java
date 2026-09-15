@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** A partial update: every {@code null} field means "not sent", so it keeps its current value. */
+// A partial update: every null field means "not sent", so it keeps its current value
 @Data
 @Builder
 @NoArgsConstructor // required by Jackson to deserialise @RequestBody

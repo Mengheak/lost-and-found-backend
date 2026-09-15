@@ -9,14 +9,14 @@ import com.group5.lostandfoundjava.entity.enums.ItemStatus;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 
-/** Reporting, searching and managing lost or found items. */
+// Reporting, searching and managing lost or found items
 public interface ItemService {
 
     ItemResponse create(UUID userId, CreateItemRequest request);
 
     ItemResponse get(UUID itemId);
 
-    /** Only the reporter may edit; anyone else gets a 403. */
+    // Only the reporter may edit; anyone else gets a 403
     ItemResponse update(UUID userId, UUID itemId, UpdateItemRequest request);
 
     void delete(UUID userId, UUID itemId);

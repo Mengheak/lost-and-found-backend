@@ -11,7 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** A partial update: every {@code null} field is skipped, so a client sends only what changed. */
+// A partial update: every null field is skipped, so a client sends only what changed
 @Data
 @Builder
 @NoArgsConstructor // required by Jackson to deserialise @RequestBody

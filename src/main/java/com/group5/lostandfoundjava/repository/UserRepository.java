@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     long countByRole(Role role);
 
-    /** Backs the admin user search: one term matched against both the name and the email. */
+    // Backs the admin user search: one term matched against both the name and the email
     Page<User> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String name, String email, Pageable pageable);
 }

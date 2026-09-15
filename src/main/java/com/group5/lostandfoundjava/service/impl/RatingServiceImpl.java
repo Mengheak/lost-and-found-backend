@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reputation left after an item changes hands. */
+// Reputation left after an item changes hands
 @Service
 @RequiredArgsConstructor
 public class RatingServiceImpl implements RatingService {

@@ -20,7 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** A user's personal shortlist of items. */
+// A user's personal shortlist of items
 @Service
 @RequiredArgsConstructor
 public class SavedItemServiceImpl implements SavedItemService {

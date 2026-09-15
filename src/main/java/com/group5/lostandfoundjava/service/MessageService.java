@@ -6,10 +6,7 @@ import com.group5.lostandfoundjava.dto.chat.SendMessageRequest;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 
-/**
- * Messages inside a conversation. Both the REST endpoint and the WebSocket controller call
- * {@link #send}, so a message behaves the same whichever way it arrives.
- */
+// Messages inside a conversation
 public interface MessageService {
 
     MessageResponse send(UUID senderId, UUID conversationId, SendMessageRequest request);

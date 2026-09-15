@@ -17,7 +17,7 @@ public class CategoryMapper {
         return new Category(trimmed(request.getName()), request.getIconUrl());
     }
 
-    /** Both fields are always sent on a category, so this is a full overwrite, not a patch. */
+    // Both fields are always sent on a category, so this is a full overwrite, not a patch
     public void updateEntity(Category category, CategoryRequest request) {
         if (category == null || request == null) {
             return;

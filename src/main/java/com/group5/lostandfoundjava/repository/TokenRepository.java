@@ -15,16 +15,11 @@ public interface TokenRepository extends JpaRepository<Token, UUID> {
 
     Optional<Token> findByToken(String token);
 
-    /** Every token of one user that has not been revoked or expired yet. */
+    // Every token of one user that has not been revoked or expired yet
     @Query("select t from Token t where t.user.id = :userId and t.revoked = false and t.expired = false")
     List<Token> findAllActiveTokensByUser(@Param("userId") UUID userId);
 
-    /**
-     * Revokes a user's tokens in one statement instead of loading them and saving them back.
-     *
-     * <p>{@code clearAutomatically} drops the persistence context's stale copies afterwards, so code
-     * running later in the same transaction cannot read a token as still active after this ran.
-     */
+    // Revokes a user's tokens in one statement instead of loading them and saving them back
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Token t set t.revoked = true, t.expired = true "
             + "where t.user.id = :userId and (t.revoked = false or t.expired = false)")

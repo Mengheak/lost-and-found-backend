@@ -11,30 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
-/**
- * Translates between {@link User} and the several shapes it is exposed in.
- *
- * <p>Keeping this out of the DTOs themselves is the point of the pattern: a DTO stays a plain
- * carrier of data with no idea what an entity is, and the services get their conversions from an
- * injected bean they can stub in a test.
- *
- * <p>Three different responses exist for one entity because they are seen by different people.
- * {@link UserResponse} goes to the account's own owner and carries the email, phone and role;
- * {@link PublicUserResponse} goes to anyone at all and carries none of those; and
- * {@link UserSummaryResponse} is the small version embedded next to an item or a message.
- */
+// Translates between User and the several shapes it is exposed
 @Component
 public class UserMapper {
 
-    /**
-     * Builds the entity for a new sign-up.
-     *
-     * <p>The hash is passed in rather than computed here: a mapper should not own a security
-     * decision, and the encoder lives in the service.
-     *
-     * <p>The role is hard-coded to {@link Role#USER}. It is deliberately not taken from the request —
-     * otherwise anyone could register themselves an administrator.
-     */
+    // Builds the entity for a new sign-up
     public User toEntity(RegisterRequest request, String encodedPassword) {
         if (request == null) {
             return null;
@@ -47,12 +28,7 @@ public class UserMapper {
                 Role.USER);
     }
 
-    /**
-     * Copies a partial update onto an existing account.
-     *
-     * <p>A {@code null} field means "not sent" and leaves the current value alone, which is what
-     * makes PATCH-style updates work.
-     */
+    // Copies a partial update onto an existing account
     public void updateEntity(User user, UpdateProfileRequest request) {
         if (user == null || request == null) {
             return;
@@ -118,7 +94,7 @@ public class UserMapper {
         return responses;
     }
 
-    /** One spelling of an address per account, so "Jane@Example.COM" cannot register twice. */
+    // One spelling of an address per account, so "Jane@Example.COM" cannot register twice
     private String normaliseEmail(String email) {
         return email == null ? null : email.trim().toLowerCase();
     }

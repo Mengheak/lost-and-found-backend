@@ -9,10 +9,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * One entry in a user's personal shortlist. The unique constraint means the same user cannot save
- * the same item twice, even if two requests arrive at the same moment.
- */
+// One entry in a user's personal shortlist
 @Getter
 @Setter
 @Entity
@@ -32,7 +29,7 @@ public class SavedItem extends BaseEntity {
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected SavedItem() {}
 
     public SavedItem(User user, Item item) {

@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    /** Referenced by {@code @SecurityRequirement(name = BEARER_SCHEME)} on protected endpoints. */
+    // Referenced by @SecurityRequirement(name = BEARER_SCHEME) on protected endpoints
     public static final String BEARER_SCHEME = "bearerAuth";
 
     @Bean

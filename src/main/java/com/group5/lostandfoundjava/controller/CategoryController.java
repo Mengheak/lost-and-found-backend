@@ -26,12 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The item taxonomy.
- *
- * <p>Reads are public and writes are admin-only, so {@code @PreAuthorize} sits on the individual
- * write methods rather than on the class.
- */
+// The item taxonomy
 @RestController
 @RequestMapping("/api/categories")
 @Tag(name = "Categories")

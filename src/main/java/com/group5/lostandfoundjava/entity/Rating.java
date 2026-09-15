@@ -10,10 +10,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Reputation left after an item changed hands. The unique constraint allows one rating per
- * (rater, rated user, item) triple, so a user cannot inflate someone's score by rating twice.
- */
+// Reputation left after an item changed hands
 @Getter
 @Setter
 @Entity
@@ -43,7 +40,7 @@ public class Rating extends BaseEntity {
     @Column(columnDefinition = "text")
     private String comment;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected Rating() {}
 
     public Rating(User fromUser, User toUser, Item item, int score, String comment) {

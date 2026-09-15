@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** One entry of a user's shortlist, with the whole item embedded. */
+// One entry of a user's shortlist, with the whole item embedded
 @Data
 @Builder
 @NoArgsConstructor

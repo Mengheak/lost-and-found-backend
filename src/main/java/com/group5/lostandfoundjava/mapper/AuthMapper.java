@@ -5,12 +5,7 @@ import com.group5.lostandfoundjava.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * Assembles the reply that {@code /register}, {@code /login} and {@code /refresh} all share.
- *
- * <p>It delegates the profile part to {@link UserMapper} rather than rebuilding it, so the user
- * object inside an auth response is always identical to the one {@code /api/users/me} returns.
- */
+// Assembles the reply that /register, /login and /refresh all share
 @Component
 @RequiredArgsConstructor
 public class AuthMapper {

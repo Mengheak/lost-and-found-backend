@@ -26,19 +26,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-/**
- * Turns every exception thrown by a controller into the same {@link ApiResponse} envelope, so an
- * error response looks just like a successful one apart from {@code "success": false}.
- *
- * <p>{@code @RestControllerAdvice} means "apply these handlers to every controller in the app".
- * Without it, each controller would have to catch and translate exceptions itself.
- */
+// Turns every exception thrown by a controller into the same ApiResponse envelope
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /** Thrown when a {@code @Valid @RequestBody} fails validation. Reports every bad field at once. */
+    // Thrown when a @Valid @RequestBody fails validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
@@ -51,7 +45,7 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(false, "Validation failed", errors));
     }
 
-    /** Thrown when a validated method parameter (not a request body) fails validation. */
+    // Thrown when a validated method parameter (not a request body) fails validation
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
@@ -78,7 +72,7 @@ public class GlobalExceptionHandler {
         return status(HttpStatus.BAD_REQUEST, "Missing required parameter '" + ex.getParameterName() + "'");
     }
 
-    /** Raised when a {@code ?sort=} query parameter names a field that does not exist. */
+    // Raised when a ?sort= query parameter names a field that does not exist
     @ExceptionHandler(PropertyReferenceException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadSort(PropertyReferenceException ex) {
         return status(HttpStatus.BAD_REQUEST, "Unknown sort property '" + ex.getPropertyName() + "'");
@@ -129,17 +123,14 @@ public class GlobalExceptionHandler {
         return status(HttpStatus.TOO_MANY_REQUESTS, messageOr(ex, "Too many requests"));
     }
 
-    /** A database constraint (unique key, foreign key, ...) rejected the write. */
+    // A database constraint (unique key, foreign key, ...) rejected the write
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
         return status(HttpStatus.CONFLICT, "Request conflicts with existing data");
     }
 
-    /**
-     * Last-resort handler. The real cause is logged for us but never sent to the client, because
-     * stack traces and internal messages can leak information about the system.
-     */
+    // Last-resort handler
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
         log.error("Unhandled exception", ex);

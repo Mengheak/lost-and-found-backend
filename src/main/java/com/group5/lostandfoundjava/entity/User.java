@@ -19,16 +19,7 @@ import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-/**
- * A registered account.
- *
- * <p>Only the bcrypt hash of the password is stored — the plain password is never written anywhere.
- *
- * <p>The entity implements {@link UserDetails} so Spring Security's own
- * {@code DaoAuthenticationProvider} can check a password against it directly, instead of every call
- * site re-implementing "load the user, then compare hashes". Spring Security's notion of a username
- * is this application's email.
- */
+// A registered account
 @Getter
 @Setter
 @Entity
@@ -56,15 +47,12 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
-    /**
-     * Lazy, and excluded from {@code toString}: the token list is only ever touched when revoking,
-     * and cascading the delete keeps a removed account from leaving usable tokens behind.
-     */
+    // Lazy, and excluded from toString: the token list is only ever touched when revoking
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @ToString.Exclude
     private List<Token> tokens = new ArrayList<>();
 
-    /** Required by JPA. Application code should use the constructor below. */
+    // Required by JPA
     protected User() {}
 
     public User(String name, String email, String phone, String passwordHash, Role role) {
@@ -77,19 +65,19 @@ public class User extends BaseEntity implements UserDetails {
 
     // --- UserDetails ---
 
-    /** The role's own authority plus one for each permission it carries. */
+    // The role's own authority plus one for each permission it carries
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role == null ? Collections.emptyList() : role.getAuthorities();
     }
 
-    /** Spring Security asks for "the password"; what is stored is its bcrypt hash. */
+    // Spring Security asks for "the password"; what is stored is its bcrypt hash
     @Override
     public String getPassword() {
         return passwordHash;
     }
 
-    /** Spring Security's "username" is the email in this application. */
+    // Spring Security's "username" is the email in this application
     @Override
     public String getUsername() {
         return email;

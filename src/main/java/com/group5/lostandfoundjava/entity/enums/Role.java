@@ -13,14 +13,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-/**
- * What an account is allowed to do. The role is stored on the user row and copied into every access
- * token, so authorising a request needs no database lookup.
- *
- * <p>Each role carries a set of {@link Permission}s. {@link #getAuthorities()} flattens the role and
- * its permissions into the list Spring Security actually checks: {@code ROLE_ADMIN} backs
- * {@code hasRole("ADMIN")}, while {@code admin:delete} backs {@code hasAuthority("admin:delete")}.
- */
+// What an account is allowed
 @RequiredArgsConstructor
 public enum Role {
     USER(Collections.emptySet()),
@@ -30,12 +23,12 @@ public enum Role {
     @Getter
     private final Set<Permission> permissions;
 
-    /** The {@code ROLE_}-prefixed name on its own, without the permissions. */
+    // The ROLE_-prefixed name on its own, without the permissions
     public String authority() {
         return "ROLE_" + name();
     }
 
-    /** Every authority this role grants: one per permission, plus the role itself. */
+    // Every authority this role grants: one per permission, plus the role itself
     public List<SimpleGrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>(permissions.size() + 1);
         permissions.forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getPermission())));
@@ -43,11 +36,7 @@ public enum Role {
         return authorities;
     }
 
-    /**
-     * Reads a role name that came from outside the application — a token claim, for example. An
-     * unknown or missing name falls back to the least privileged role rather than failing, so a
-     * tampered token can only ever lose access, never gain it.
-     */
+    // Reads a role name that came from outside the application — a token claim, for example
     public static Role fromNameOrDefault(String name) {
         for (Role role : values()) {
             if (role.name().equals(name)) {

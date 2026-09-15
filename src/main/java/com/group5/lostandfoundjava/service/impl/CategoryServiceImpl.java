@@ -61,10 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toResponse(categoryRepository.save(category));
     }
 
-    /**
-     * Deleting a category that items still reference is refused by the database's foreign key, which
-     * the exception handler reports as a 409 conflict.
-     */
+    // Deleting a category that items still reference is refused by the database's foreign key
     @Override
     @Transactional
     public void delete(UUID id) {

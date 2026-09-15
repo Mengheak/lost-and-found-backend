@@ -9,17 +9,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
-/**
- * The WebSocket half of the chat.
- *
- * <p>{@code @MessageMapping} is the STOMP equivalent of {@code @PostMapping}: a client publishing to
- * {@code /app/conversations/{id}/send} lands here. The method returns nothing, because the message
- * is broadcast from inside the service — which is what keeps REST and WebSocket sends identical.
- *
- * <p>The {@link Principal} is the user
- * {@link com.group5.lostandfoundjava.security.AuthChannelInterceptor} authenticated when the socket
- * connected, so the sender cannot be spoofed by the payload.
- */
+// The WebSocket half of the chat
 @Controller
 public class ChatWebSocketController {
 

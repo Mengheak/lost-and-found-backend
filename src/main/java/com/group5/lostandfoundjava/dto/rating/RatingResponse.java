@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** A rating as shown on a profile page: who left it, for which item, and what they said. */
+// A rating as shown on a profile page: who left it, for which item, and what they said
 @Data
 @Builder
 @NoArgsConstructor

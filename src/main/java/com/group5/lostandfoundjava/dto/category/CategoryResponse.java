@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** A category as the client sees it. */
+// A category as the client sees
 @Data
 @Builder
 @NoArgsConstructor

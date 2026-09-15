@@ -15,22 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Makes sure there is always one administrator to sign in with.
- *
- * <p>An {@link ApplicationRunner} runs once, right after startup. On every boot this checks the
- * account named by {@code app.admin.email}:
- *
- * <ul>
- *   <li>missing — it is created with the configured password
- *   <li>exists but is a regular user — it is promoted to {@code ADMIN}
- *   <li>exists already as an admin — nothing happens
- * </ul>
- *
- * <p>An existing account's password is never overwritten, so pointing this at a real user's email
- * cannot hand their account to whoever knows the configured password. The one exception is the
- * deliberate {@code resetPassword} escape hatch for when everybody is locked out.
- */
+// Makes sure there is always one administrator to sign
 @Component
 @Slf4j
 public class AdminBootstrap implements ApplicationRunner {

@@ -25,7 +25,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final PushSender pushSender;
     private final NotificationMapper notificationMapper;
 
-    /** Stores the notification for the in-app feed, then mirrors it to the device as a push. */
+    // Stores the notification for the in-app feed, then mirrors it to the device as a push
     @Override
     @Transactional
     public void notify(User user, NotificationType type, String message) {
@@ -61,7 +61,7 @@ public class NotificationServiceImpl implements NotificationService {
         return notificationRepository.markAllRead(userId);
     }
 
-    /** The short headline a push notification shows above the message. */
+    // The short headline a push notification shows above the message
     private String title(NotificationType type) {
         return switch (type) {
             case ITEM_SAVED -> "Your item was saved";

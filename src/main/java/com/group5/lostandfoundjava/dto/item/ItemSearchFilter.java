@@ -9,12 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * The item search's query parameters, gathered into one object.
- *
- * <p>Every field is optional; a {@code null} contributes no condition to the query. See
- * {@link com.group5.lostandfoundjava.repository.specification.ItemSpecifications}.
- */
+// The item search's query parameters, gathered into one object
 @Data
 @Builder
 @NoArgsConstructor
@@ -27,7 +22,7 @@ public class ItemSearchFilter {
 
     private UUID categoryId;
 
-    /** Free text matched against both the item's name and its description. */
+    // Free text matched against both the item's name and its description
     private String keyword;
 
     private String brand;

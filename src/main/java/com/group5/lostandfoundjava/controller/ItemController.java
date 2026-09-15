@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Reporting, searching and managing lost or found items. */
+// Reporting, searching and managing lost or found items
 @RestController
 @RequestMapping("/api/items")
 @Tag(name = "Items")
@@ -89,10 +89,7 @@ public class ItemController {
         return ApiResponse.ok(itemService.get(id));
     }
 
-    /**
-     * The eight filters arrive as separate query parameters and are bundled into one
-     * {@link ItemSearchFilter} before being handed to the service.
-     */
+    // The eight filters arrive as separate query parameters and are bundled into one
     @GetMapping
     @Operation(
             summary = "Search items",

@@ -48,7 +48,7 @@ public class Item extends BaseEntity {
 
     private String color;
 
-    /** Photo links live in their own small table, {@code item_photo_urls}. */
+    // Photo links live in their own small table, item_photo_urls
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "item_photo_urls", joinColumns = @JoinColumn(name = "item_id"))
     @Column(name = "photo_url", nullable = false)
@@ -60,7 +60,7 @@ public class Item extends BaseEntity {
     @Column(name = "location_lng")
     private Double locationLng;
 
-    /** When the item was lost or found — not when the report was created. */
+    // When the item was lost or found — not when the report was created
     @Column(name = "date_time")
     private Instant dateTime;
 
@@ -68,21 +68,18 @@ public class Item extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ItemStatus status = ItemStatus.OPEN;
 
-    /** Only meaningful when {@link #type} is {@code LOST}. */
+    // Only meaningful when #type is LOST
     @Column(name = "reward_amount", precision = 12, scale = 2)
     private BigDecimal rewardAmount;
 
-    /** Only meaningful when {@link #type} is {@code FOUND}. */
+    // Only meaningful when #type is FOUND
     @Column(name = "storage_location")
     private String storageLocation;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected Item() {}
 
-    /**
-     * Creates an item with the four fields that are always required. Everything else is optional
-     * and set afterwards with the generated setters.
-     */
+    // Creates an item with the four fields that are always required
     public Item(User user, Category category, ItemType type, String name) {
         this.user = user;
         this.category = category;

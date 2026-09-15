@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Body used both to create and to rename a category. Admins only. */
+// Body used both to create and to rename a category
 @Data
 @Builder
 @NoArgsConstructor // required by Jackson to deserialise @RequestBody

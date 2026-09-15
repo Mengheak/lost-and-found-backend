@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Reputation left after an item is returned. */
+// Reputation left after an item is returned
 @RestController
 @RequestMapping("/api/ratings")
 @Tag(name = "Ratings")

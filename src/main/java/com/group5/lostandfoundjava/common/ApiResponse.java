@@ -1,12 +1,6 @@
 package com.group5.lostandfoundjava.common;
 
-/**
- * The single envelope every endpoint returns, so clients always parse the same shape:
- *
- * <pre>{ "success": true, "message": "Success", "data": { ... } }</pre>
- *
- * @param <T> type of the payload carried in {@code data}
- */
+// The single envelope every endpoint returns
 public record ApiResponse<T>(boolean success, String message, T data) {
 
     public static <T> ApiResponse<T> ok(T data) {

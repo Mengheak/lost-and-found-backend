@@ -15,21 +15,7 @@ import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
 
-/**
- * Creates and reads JSON Web Tokens. This is the only class in the app that knows the token format.
- *
- * <p>Two kinds of token are issued, told apart by a {@code type} claim:
- *
- * <ul>
- *   <li><b>access</b> — short-lived, sent with every request, and carries the user's role so that
- *       authorising a request needs no database lookup
- *   <li><b>refresh</b> — long-lived, only accepted by {@code /api/auth/refresh}, and deliberately
- *       carries no role, so a role change takes effect on the next refresh
- * </ul>
- *
- * <p>The token is signed, not encrypted: anyone can read its contents, but nobody can change them
- * without the secret.
- */
+// Creates and reads JSON Web Tokens
 @Component
 public class JwtProvider {
 
@@ -48,7 +34,7 @@ public class JwtProvider {
         this.refreshTtl = properties.refreshTokenTtl();
     }
 
-    /** Reported to the client so it knows when to refresh. */
+    // Reported to the client so it knows when to refresh
     public long getAccessTokenTtlSeconds() {
         return accessTtl.getSeconds();
     }
@@ -61,12 +47,7 @@ public class JwtProvider {
         return generate(userId, refreshTtl, TYPE_REFRESH, null);
     }
 
-    /**
-     * Verifies the signature and expiry and returns the token's contents.
-     *
-     * @return the claims, or {@code null} when the token is missing, malformed, tampered with or
-     *     expired. Callers treat all of those the same way, so there is no reason to distinguish them
-     */
+    // Verifies the signature and expiry and returns the token's contents
     public Claims parse(String token) {
         try {
             return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
@@ -75,7 +56,7 @@ public class JwtProvider {
         }
     }
 
-    /** The {@code sub} claim: which user the token belongs to. */
+    // The sub claim: which user the token belongs
     public UUID userIdFrom(Claims claims) {
         return UUID.fromString(claims.getSubject());
     }
@@ -97,9 +78,7 @@ public class JwtProvider {
         JwtBuilder builder =
                 Jwts.builder()
                         .subject(userId.toString())
-                        // A JWT ID makes every token unique. Without it, two tokens minted for the
-                        // same user in the same second are byte-identical, because iat and exp only
-                        // have second precision — and the token store keys on the token itself.
+                        // A JWT ID makes every token unique
                         .id(UUID.randomUUID().toString())
                         .claim(CLAIM_TYPE, type)
                         .issuedAt(Date.from(now))

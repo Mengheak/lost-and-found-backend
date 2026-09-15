@@ -8,10 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * The account as its own owner sees it. Deliberately has no password field — the entity must never
- * be serialised straight into a response.
- */
+// The account as its own owner sees
 @Data
 @Builder
 @NoArgsConstructor

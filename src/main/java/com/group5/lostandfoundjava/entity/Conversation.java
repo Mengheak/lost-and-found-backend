@@ -28,7 +28,7 @@ public class Conversation extends BaseEntity {
     @JoinColumn(name = "user_b_id", nullable = false)
     private User userB;
 
-    /** Required by JPA. */
+    // Required by JPA
     protected Conversation() {}
 
     public Conversation(Item item, User userA, User userB) {
@@ -37,12 +37,12 @@ public class Conversation extends BaseEntity {
         this.userB = userB;
     }
 
-    /** True when the given user is one of the two people in this thread. */
+    // True when the given user is one of the two people in this thread
     public boolean isParticipant(UUID userId) {
         return userA.getId().equals(userId) || userB.getId().equals(userId);
     }
 
-    /** Given one participant, returns the other one — the person to notify about a new message. */
+    // Given one participant, returns the other one — the person to notify about a new message
     public User otherParticipant(UUID userId) {
         return userA.getId().equals(userId) ? userB : userA;
     }

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-/** Database access for {@link SavedItem}. */
+// Database access for SavedItem
 @Repository
 public interface SavedItemRepository extends JpaRepository<SavedItem, UUID> {
 

@@ -45,10 +45,7 @@ public class TokenServiceImpl implements TokenService {
         });
     }
 
-    /**
-     * Runs on every authenticated request, so it is deliberately a single indexed lookup on the
-     * token's unique column and nothing else.
-     */
+    // Runs on every authenticated request
     @Override
     @Transactional(readOnly = true)
     public boolean isActive(String token) {

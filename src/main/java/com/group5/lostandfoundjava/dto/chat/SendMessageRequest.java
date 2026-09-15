@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Either field may be left out, but the service refuses a message that has neither. */
+// Either field may be left out, but the service refuses a message that has neither
 @Data
 @Builder
 @NoArgsConstructor // required by Jackson to deserialise @RequestBody

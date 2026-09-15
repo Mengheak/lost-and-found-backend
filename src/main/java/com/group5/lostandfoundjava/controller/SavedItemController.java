@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The caller's personal shortlist. Every endpoint here works on the caller's own list only. */
+// The caller's personal shortlist
 @RestController
 @RequestMapping("/api/saved-items")
 @Tag(name = "Saved Items")

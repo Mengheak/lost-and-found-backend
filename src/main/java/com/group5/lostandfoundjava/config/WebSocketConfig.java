@@ -8,21 +8,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-/**
- * Real-time chat over STOMP on top of WebSocket.
- *
- * <p>How the pieces fit together:
- *
- * <ul>
- *   <li>the client connects to {@code /ws}, sending its access token in the CONNECT frame
- *   <li>it subscribes to {@code /topic/conversations/{id}} to receive messages
- *   <li>it publishes to {@code /app/conversations/{id}/send} to post one
- * </ul>
- *
- * <p>The broker is the built-in in-memory one, which is enough for a single instance. Running
- * several instances would need a real broker (RabbitMQ, ActiveMQ) so subscribers on one instance see
- * messages published on another.
- */
+// Real-time chat over STOMP on top of WebSocket
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -44,7 +30,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws").setAllowedOriginPatterns("*");
     }
 
-    /** Hooks JWT checking into every inbound frame. See {@link AuthChannelInterceptor}. */
+    // Hooks JWT checking into every inbound frame
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(authChannelInterceptor);

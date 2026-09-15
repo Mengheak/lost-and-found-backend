@@ -8,15 +8,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Sends push notifications through Firebase Cloud Messaging.
- *
- * <p>Messages go to the topic {@code user-<id>}: the client subscribes to its own topic after
- * logging in, which means the backend never has to store device tokens.
- *
- * <p>Created by {@link com.group5.lostandfoundjava.config.PushConfig} rather than annotated as a
- * bean, because it only exists when Firebase credentials are configured.
- */
+// Sends push notifications through Firebase Cloud Messaging
 public class FcmPushSender implements PushSender {
 
     private static final Logger log = LoggerFactory.getLogger(FcmPushSender.class);

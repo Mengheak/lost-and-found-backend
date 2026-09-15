@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-/** Database access for {@link Category}. */
+// Database access for Category
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 

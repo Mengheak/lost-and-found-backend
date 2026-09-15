@@ -48,8 +48,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Listed before the blanket /api/auth/** rule below, because the first
-                        // matching rule wins and logging out is the one auth call that needs a token.
+                        // Listed before the blanket /api/auth/** rule below
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout")
                         .authenticated()
                         .requestMatchers(
@@ -88,7 +87,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** Security errors happen before any controller runs, so the envelope is written by hand here. */
+    // Security errors happen before any controller runs, so the envelope is written by hand here
     private void writeError(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

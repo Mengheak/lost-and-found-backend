@@ -10,18 +10,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/** Database access for {@link Notification}. */
+// Database access for Notification
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
     Page<Notification> findByUserId(UUID userId, Pageable pageable);
 
-    /**
-     * Marks the whole feed as read in a single UPDATE statement instead of loading every row.
-     * {@code @Modifying} tells Spring Data this query writes rather than reads.
-     *
-     * @return how many rows were changed
-     */
+    // Marks the whole feed as read in a single UPDATE statement instead of loading every row
     @Modifying
     @Query("update Notification n set n.read = true where n.user.id = :userId and n.read = false")
     int markAllRead(@Param("userId") UUID userId);
