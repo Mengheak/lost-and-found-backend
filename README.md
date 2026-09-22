@@ -75,30 +75,31 @@ Every endpoint answers with the **same envelope**, success or failure:
 **Prerequisites:** Java 21+ and Docker (for the database). The Maven wrapper `./mvnw` downloads
 Maven itself — you do not need Maven installed.
 
-### Option A — run the app locally, database in Docker (recommended for development)
-
-```bash
-# 1. start PostgreSQL
-docker run -d --name lostfound-db -p 5432:5432 \
-  -e POSTGRES_DB=lostfound -e POSTGRES_USER=lostfound -e POSTGRES_PASSWORD=lostfound \
-  postgres:16-alpine
-
-# 2. run the API
-./mvnw spring-boot:run          # Windows: mvnw.cmd spring-boot:run
-```
-
-### Option B — everything in Docker
-
-`docker-compose.yml` **pulls a pre-built image from GHCR**, it does not build one. It needs two
-variables that are *not* in `.env.example`:
+### Option A — everything in Docker
 
 ```bash
 cp .env.example .env
-printf 'GH_REPO=<owner>/<repo>\nIMAGE_TAG=latest\n' >> .env
+# Fill every blank password/JWT value and set GH_REPO=<owner>/<repo>.
 docker compose up -d
 ```
 
-To run the container from your own source instead, build the image first and point `GH_REPO` at it:
+Compose provisions three distinct PostgreSQL roles, runs migrations in a short-lived Flyway
+container, applies runtime grants, and only then starts the API.
+
+For an existing volume created by the older Compose file, role provisioning temporarily connects
+with the former `DB_USER`, transfers schema ownership to `DB_MIGRATION_USER`, creates the new
+administrator, and removes superuser privileges from `DB_USER` before the API starts.
+
+### Option B — run the app locally, infrastructure in Docker
+
+```bash
+docker compose up -d db db-init migrate db-grants
+# Run the API with DB_USER/DB_PASSWORD from .env and SPRING_FLYWAY_ENABLED=false.
+./mvnw spring-boot:run          # Windows: mvnw.cmd spring-boot:run
+```
+
+`docker-compose.yml` pulls the API image from GHCR. To use your own build, build it and set
+`GH_REPO=local/lost-and-found-java` in `.env`:
 
 ```bash
 docker build -t ghcr.io/local/lost-and-found-java:latest .
@@ -307,7 +308,9 @@ Full detail — including exactly what happens when someone spams the login endp
 
 ## Database
 
-Flyway owns the schema; migrations live in `src/main/resources/db/migration` and run at startup.
+Flyway owns the schema; migrations live in `src/main/resources/db/migration`. Docker runs them in a
+short-lived migration container before starting the API. The application role has table DML rights
+but cannot create or alter schema objects or access Flyway's history table.
 
 | File | What it does |
 | --- | --- |
@@ -334,12 +337,15 @@ entities and the tables still agree and refuses to start if they have drifted.
 
 ## Configuration
 
-Everything has a working default for local development. Override with environment variables:
+Security-sensitive values are explicit in Compose; local Spring defaults remain available only for
+the database address and token lifetimes:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `DB_URL` / `DB_HOST` / `DB_PORT` / `DB_NAME` | `localhost:5432/lostfound` | database location |
-| `DB_USER` / `DB_PASSWORD` | `lostfound` / `lostfound` | database credentials |
+| `DB_ADMIN_USER` / `DB_ADMIN_PASSWORD` | required by Compose | PostgreSQL bootstrap administrator; unavailable to the API container |
+| `DB_MIGRATION_USER` / `DB_MIGRATION_PASSWORD` | required by Compose | schema owner used only by the Flyway container |
+| `DB_USER` / `DB_PASSWORD` | required by Compose | restricted runtime role with table DML privileges |
 | `JWT_SECRET` | required | HS256 signing key — startup fails unless it contains at least 32 bytes |
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d` | token lifetimes |
 | `TOKEN_CLEANUP_CRON` | `0 0 * * * *` | Spring cron expression for deleting expired token fingerprints |
@@ -353,7 +359,8 @@ Everything has a working default for local development. Override with environmen
 | `GH_REPO` / `IMAGE_TAG` | — | used by `docker-compose.yml` to pick the GHCR image |
 
 Profiles: the default `application.yaml`, plus `application-docker.yaml`
-(`SPRING_PROFILES_ACTIVE=docker`) which only changes the datasource host and the log pattern.
+(`SPRING_PROFILES_ACTIVE=docker`) which changes the datasource host and log pattern. Compose also
+sets `SPRING_FLYWAY_ENABLED=false` because its separate Flyway service has already migrated the DB.
 
 **Production checklist:** fresh `JWT_SECRET`, an explicitly chosen strong `ADMIN_PASSWORD` when
 bootstrapping an admin, `CORS_ALLOWED_ORIGINS` narrowed to your real frontend, and
@@ -383,7 +390,7 @@ The integration tests are annotated `@Testcontainers(disabledWithoutDocker = tru
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
 | `.github/workflows/ci.yaml` | every PR and push to `main` | `./mvnw -B verify`; uploads Surefire reports on failure |
-| `.github/workflows/deploy.yml` | push to `main` | builds the Docker image → pushes `:latest` and `:<sha>` to GHCR → SSHes to EC2, `docker compose pull && up -d`, then polls `/actuator/health` for up to 100 s and dumps container logs if it never comes up |
+| `.github/workflows/deploy.yml` | push to `main` | builds and pushes the API image, provisions DB roles, runs Flyway and runtime grants, recreates the API, then polls `/actuator/health` |
 
 The `Dockerfile` is a two-stage build: Maven + JDK 21 to build, `eclipse-temurin:21-jre-alpine` to
 run, as a non-root `app` user, with a `HEALTHCHECK` hitting `/actuator/health`.

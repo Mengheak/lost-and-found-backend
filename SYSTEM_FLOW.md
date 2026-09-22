@@ -68,10 +68,13 @@ LostAndFoundJavaApplication.main()
    │
    ├─▶ DataSource connects to PostgreSQL (DB_URL / DB_HOST / DB_PORT / DB_NAME)
    │
-   ├─▶ FLYWAY runs classpath:db/migration in order
+   ├─▶ FLYWAY runs classpath:db/migration in order (local mode)
+   │      Docker disables this copy; its short-lived Flyway container runs the same files first.
    │      V1__init_schema.sql      8 tables + indexes
    │      V2__seed_categories.sql  13 categories with fixed UUIDs
    │      V3__add_user_role.sql    users.role + CHECK constraint
+   │      V4__create_tokens.sql    revocable-token store
+   │      V5__secure_token_storage.sql  hashed tokens + expiry metadata
    │      → each file's checksum is stored; editing an applied file aborts the boot
    │
    ├─▶ HIBERNATE starts with ddl-auto: validate
@@ -847,20 +850,23 @@ git push origin main
          │
          ② SSH to EC2 (appleboy/ssh-action)
          │     cd ~/lost-and-found-backend
-         │     docker compose pull app
-         │     docker compose up -d --force-recreate app
+         │     start PostgreSQL and wait for health
+         │     provision separate admin, migration and runtime roles
+         │     run the short-lived Flyway migration container
+         │     grant table DML to the runtime role, excluding Flyway history
+         │     recreate the API with only the runtime DB credentials
          │
          ③ poll http://localhost:8080/actuator/health, 20 tries × 5 s = 100 s
          │     UP    → docker image prune -f, exit 0
          │     never → docker logs --tail 100 lostfound-java-app, exit 1
          ▼
-On the box: db (postgres:16-alpine, 256 MB, pgdata volume) + app (600 MB,
-published on 127.0.0.1:8080 only — a reverse proxy is expected in front),
-SPRING_PROFILES_ACTIVE=docker, MaxRAMPercentage=65, SerialGC.
+On the box: PostgreSQL plus short-lived role-provisioning, Flyway and grant containers, then the
+long-running app (600 MB, published on 127.0.0.1:8080 only — a reverse proxy is expected in front).
+The app receives neither the database administrator password nor migration-owner credentials.
 ```
 
-On every container start the flow from [§2](#2-application-startup-flow) repeats: Flyway applies
-any new migration, Hibernate validates, `AdminBootstrap` re-checks the admin account.
+On every deployment, Flyway applies pending migrations before the API starts. Hibernate then
+validates the schema and `AdminBootstrap` checks its explicitly configured account.
 
 ---
 
