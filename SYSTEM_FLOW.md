@@ -92,25 +92,25 @@ LostAndFoundJavaApplication.main()
 ### AdminBootstrap decision tree
 
 ```
-app.admin.email
+app.admin.email + app.admin.password
    │
-   ├── empty ───────────────────────────────▶ do nothing (feature switched off)
+   ├── both empty ──────────────────────────▶ do nothing (feature switched off)
+   ├── only one set ────────────────────────▶ fail startup
+   ├── password shorter than 12 characters ▶ fail startup
    │
-   └── set → look the account up by email
-             │
-             ├── NOT found
-             │      ├── app.admin.password empty → log a warning, skip
-             │      └── password set            → CREATE the account with role = ADMIN
-             │
-             └── FOUND
-                    ├── role != ADMIN                    → promote to ADMIN
-                    ├── app.admin.reset-password = true  → overwrite the password hash (logged as a warning)
-                    └── nothing changed                  → no database write at all
+   └── both valid → look the account up by email
+                    │
+                    ├── NOT found → CREATE the account with role = ADMIN
+                    │
+                    └── FOUND
+                           ├── role != ADMIN → fail startup; never promote implicitly
+                           ├── retired default password still active → fail startup
+                           ├── reset-password = true → reset this ADMIN's password
+                           └── otherwise → no database write
 ```
 
-> **Why it never overwrites an existing password by default:** pointing `ADMIN_EMAIL` at a real
-> user's address must not hand their account to whoever knows `ADMIN_PASSWORD`. The
-> `ADMIN_RESET_PASSWORD` flag is the deliberate, logged escape hatch for when everyone is locked out.
+This flow requires explicit credentials and refuses to turn an existing regular account into an
+administrator. `ADMIN_RESET_PASSWORD` only applies to an account that is already an administrator.
 
 Once startup finishes, `/actuator/health` reports `UP` — which is what Docker's `HEALTHCHECK` and
 the deploy workflow poll.

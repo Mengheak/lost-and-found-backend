@@ -113,17 +113,13 @@ docker build -t ghcr.io/local/lost-and-found-java:latest .
 | OpenAPI JSON | <http://localhost:8080/v3/api-docs> |
 | Health check | <http://localhost:8080/actuator/health> |
 
-### First login
+### Initial administrator
 
-Every startup ensures a default administrator exists (see `app.admin.*`, or the `ADMIN_*`
-variables). Out of the box:
-
-```
-email:    mengheak088@gmail.com
-password: 12345678
-```
-
-> ⚠️ **Change `ADMIN_PASSWORD` and `JWT_SECRET` before deploying anywhere real.**
+No administrator credentials are built in. To create the initial administrator, set both
+`ADMIN_EMAIL` and `ADMIN_PASSWORD` before the first startup. The password must contain at least
+12 characters. If the email already belongs to a regular user, startup fails instead of promoting
+that account. An existing administrator that still uses the retired built-in password also causes
+startup to fail until its password is explicitly reset with `ADMIN_RESET_PASSWORD=true`.
 
 ---
 
@@ -150,7 +146,7 @@ HTTP request
 ```
 src/main/java/com/group5/lostandfoundjava/
 ├── LostAndFoundJavaApplication.java   entry point
-├── bootstrap/      runs once at startup (ensures the default admin exists)
+├── bootstrap/      optionally creates an explicitly configured initial admin
 ├── common/         ApiResponse envelope, PageResponse, GlobalExceptionHandler
 ├── config/         Spring configuration + typed @ConfigurationProperties records
 ├── controller/     REST endpoints, one class per resource, + the STOMP chat controller
@@ -345,16 +341,17 @@ Everything has a working default for local development. Override with environmen
 | `LOGIN_MAX_ATTEMPTS` | `5` | failures before an email is locked |
 | `LOGIN_LOCKOUT` | `15m` | how long the lockout lasts |
 | `LOGIN_ATTEMPT_WINDOW` | `15m` | failures further apart than this do not add up |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | see `.env.example` | default admin; **empty email disables it** |
-| `ADMIN_RESET_PASSWORD` | `false` | one-boot escape hatch if you are locked out |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | empty / empty / `Administrator` | optional initial admin; email and a 12+ character password are both required |
+| `ADMIN_RESET_PASSWORD` | `false` | explicitly reset the password of an existing admin on one boot |
 | `FIREBASE_CREDENTIALS` | empty | path to a Firebase service-account JSON; empty = push disabled |
 | `GH_REPO` / `IMAGE_TAG` | — | used by `docker-compose.yml` to pick the GHCR image |
 
 Profiles: the default `application.yaml`, plus `application-docker.yaml`
 (`SPRING_PROFILES_ACTIVE=docker`) which only changes the datasource host and the log pattern.
 
-**Production checklist:** fresh `JWT_SECRET`, changed `ADMIN_PASSWORD`, `CORS_ALLOWED_ORIGINS`
-narrowed to your real frontend, and `ADMIN_RESET_PASSWORD=false`.
+**Production checklist:** fresh `JWT_SECRET`, an explicitly chosen strong `ADMIN_PASSWORD` when
+bootstrapping an admin, `CORS_ALLOWED_ORIGINS` narrowed to your real frontend, and
+`ADMIN_RESET_PASSWORD=false`.
 
 ---
 

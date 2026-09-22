@@ -4,22 +4,20 @@ import com.group5.lostandfoundjava.config.AdminProperties;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.Role;
 import com.group5.lostandfoundjava.repository.UserRepository;
-import java.util.Optional;
-
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-// Makes sure there is always one administrator to sign
+// Creates an initial administrator only when explicit, safe credentials are supplied.
 @Component
 @Slf4j
 public class AdminBootstrap implements ApplicationRunner {
 
+    private static final int MINIMUM_PASSWORD_LENGTH = 12;
+    private static final String RETIRED_INSECURE_PASSWORD = "12345678";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -36,47 +34,47 @@ public class AdminBootstrap implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         String email = properties.email().trim().toLowerCase();
-        if (email.isEmpty()) {
-            return; // The feature is switched off.
-        }
-
-        Optional<User> existing = userRepository.findByEmail(email);
-        if (existing.isPresent()) {
-            updateExisting(existing.get(), email);
+        String password = properties.password();
+        if (email.isEmpty() && password.isEmpty()) {
             return;
         }
-
-        if (properties.password().isEmpty()) {
-            log.warn("app.admin.email is '{}' but no account exists and no password is set; skipping", email);
-            return;
+        if (email.isEmpty() || password.isEmpty()) {
+            throw new IllegalStateException("ADMIN_EMAIL and ADMIN_PASSWORD must either both be set or both be empty");
+        }
+        if (password.length() < MINIMUM_PASSWORD_LENGTH) {
+            throw new IllegalStateException("ADMIN_PASSWORD must contain at least 12 characters");
         }
 
-        userRepository.save(new User(
-                properties.name().trim(), email, null, passwordEncoder.encode(properties.password()), Role.ADMIN));
-        log.info("Created default ADMIN account '{}' — change its password after first login", email);
+        userRepository.findByEmail(email).ifPresentOrElse(
+                user -> updateExistingAdmin(user, email, password),
+                () -> createAdmin(email, password));
     }
 
-    private void updateExisting(User user, String email) {
-        boolean changed = false;
-
+    private void updateExistingAdmin(User user, String email, String password) {
         if (user.getRole() != Role.ADMIN) {
-            user.setRole(Role.ADMIN);
-            changed = true;
-            log.info("Promoted existing account '{}' to ADMIN", email);
+            throw new IllegalStateException(
+                    "ADMIN_EMAIL belongs to an existing non-admin account; refusing to promote it automatically");
         }
-
-        if (properties.resetPassword() && !properties.password().isEmpty()) {
-            user.setPasswordHash(passwordEncoder.encode(properties.password()));
-            changed = true;
+        if (!properties.resetPassword()
+                && passwordEncoder.matches(RETIRED_INSECURE_PASSWORD, user.getPasswordHash())) {
+            throw new IllegalStateException(
+                    "Existing ADMIN uses the retired insecure default password; configure a new password "
+                            + "and set ADMIN_RESET_PASSWORD=true for one startup");
+        }
+        if (properties.resetPassword()) {
+            user.setPasswordHash(passwordEncoder.encode(password));
+            userRepository.save(user);
             log.warn(
-                    "Reset the password of '{}' from app.admin.password — "
+                    "Reset the password of existing ADMIN '{}' from app.admin.password; "
                             + "turn ADMIN_RESET_PASSWORD off again once you are back in",
                     email);
         }
+    }
 
-        // Only write when something actually changed, so a normal restart touches nothing.
-        if (changed) {
-            userRepository.save(user);
-        }
+    private void createAdmin(String email, String password) {
+        String configuredName = properties.name().trim();
+        String name = configuredName.isEmpty() ? "Administrator" : configuredName;
+        userRepository.save(new User(name, email, null, passwordEncoder.encode(password), Role.ADMIN));
+        log.info("Created explicitly configured initial ADMIN account '{}'", email);
     }
 }

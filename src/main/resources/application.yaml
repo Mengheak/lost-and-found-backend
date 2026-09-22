@@ -31,8 +31,8 @@ app:
   fcm:
     credentials-path: ${FIREBASE_CREDENTIALS:}
   admin:
-    email: ${ADMIN_EMAIL:mengheak088@gmail.com}
-    password: ${ADMIN_PASSWORD:12345678}
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
     name: ${ADMIN_NAME:Administrator}
     reset-password: ${ADMIN_RESET_PASSWORD:false}
 

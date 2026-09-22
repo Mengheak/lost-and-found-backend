@@ -16,8 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 
-// Proves the startup runner really does leave a usable admin behind
+// Proves explicitly configured bootstrap credentials create a usable admin.
+@TestPropertySource(properties = {
+    "app.admin.email=integration-admin@example.com",
+    "app.admin.password=integration-admin-password",
+    "app.admin.name=Integration Administrator"
+})
 class DefaultAdminIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -27,8 +33,8 @@ class DefaultAdminIntegrationTest extends AbstractIntegrationTest {
     private AdminProperties adminProperties;
 
     @Test
-    @DisplayName("the default admin account exists with the ADMIN role")
-    void defaultAdminExists() {
+    @DisplayName("the explicitly configured admin account exists with the ADMIN role")
+    void configuredAdminExists() {
         Optional<User> admin = userRepository.findByEmail(adminProperties.email().toLowerCase());
 
         assertTrue(admin.isPresent(), "default admin was not created on startup");
@@ -36,8 +42,8 @@ class DefaultAdminIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("the default admin can log in and reach the admin area")
-    void defaultAdminCanLogIn() {
+    @DisplayName("the explicitly configured admin can log in and reach the admin area")
+    void configuredAdminCanLogIn() {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("email", adminProperties.email());
         body.put("password", adminProperties.password());
