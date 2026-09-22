@@ -14,6 +14,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
 
+    @Query("select count(c) > 0 from Conversation c where c.id = :conversationId "
+            + "and (c.userA.id = :userId or c.userB.id = :userId)")
+    boolean existsForParticipant(@Param("conversationId") UUID conversationId, @Param("userId") UUID userId);
+
     // Finds the existing thread for an item between two users, whichever way round they are stored
     @Query(
             """
