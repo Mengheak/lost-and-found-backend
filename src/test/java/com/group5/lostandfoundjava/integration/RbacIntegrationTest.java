@@ -118,6 +118,25 @@ class RbacIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("demoting an admin immediately revokes their access and refresh tokens")
+    void demotionRevokesExistingTokens() {
+        Admin actingAdmin = promoteToAdmin("rbac-acting-admin@example.com");
+        Admin targetAdmin = promoteToAdmin("rbac-demoted-admin@example.com");
+
+        ResponseEntity<String> demotion = patchJson(
+                "/api/admin/users/" + targetAdmin.id() + "/role",
+                Map.of("role", "USER"),
+                actingAdmin.token());
+
+        assertEquals(HttpStatus.OK, demotion.getStatusCode());
+        assertEquals(HttpStatus.UNAUTHORIZED,
+                getJson("/api/admin/users", targetAdmin.token()).getStatusCode());
+        assertEquals(HttpStatus.UNAUTHORIZED,
+                postJson("/api/auth/refresh", Map.of("refreshToken", targetAdmin.refreshToken()), null)
+                        .getStatusCode());
+    }
+
+    @Test
     @DisplayName("category writes are admin-only while reads stay open to any signed-in user")
     void categoryWritesAreAdminOnly() {
         String userToken =
@@ -135,7 +154,7 @@ class RbacIntegrationTest extends AbstractIntegrationTest {
                 postJson("/api/categories", Map.of("name", name), admin.token()).getStatusCode());
     }
 
-    private record Admin(String id, String token) {}
+    private record Admin(String id, String token, String refreshToken) {}
 
     // Registers a user, promotes them straight in the database, then logs in for a fresh token
     private Admin promoteToAdmin(String email) {
@@ -148,7 +167,8 @@ class RbacIntegrationTest extends AbstractIntegrationTest {
 
         ResponseEntity<String> login = postJson("/api/auth/login", credentials(email), null);
         assertEquals(HttpStatus.OK, login.getStatusCode(), "admin login failed: " + login.getBody());
-        return new Admin(id, json(login).path("data").path("accessToken").asText());
+        JsonNode data = json(login).path("data");
+        return new Admin(id, data.path("accessToken").asText(), data.path("refreshToken").asText());
     }
 
     private Map<String, Object> credentials(String email) {

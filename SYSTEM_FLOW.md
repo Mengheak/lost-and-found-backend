@@ -356,8 +356,8 @@ POST /api/auth/refresh   { "refreshToken": "…" }
 ```
 
 > **Why the refresh token carries no `role` claim:** the role is re-read from the database in
-> step ③. That is what makes a promotion or demotion take effect at the next *refresh* (≤15 minutes
-> in practice) instead of only at the next full login.
+> step ③. A role change also revokes every existing token for that user, so those credentials cannot
+> be refreshed; the user must sign in again to receive the current role.
 
 The mirror image, in `JwtAuthenticationFilter`, is just as important: a refresh token presented as
 `Authorization: Bearer …` fails the `isAccessToken` check and is ignored, so a long-lived token can
@@ -780,10 +780,10 @@ PATCH /api/admin/users/{id}/role   { "role": "ADMIN" }
    ① user already has that role → return unchanged, no guard needed, no write
    ② userId == actingAdminId    → 400 "You cannot change your own role"
    ③ demoting an ADMIN when countByRole(ADMIN) <= 1 → 400 "Cannot demote the last remaining admin"
-   ④ save
+   ④ save the new role
+   ⑤ revoke every access and refresh token belonging to the affected user
    │
-   └─ the affected user KEEPS their old permissions until their next login or token refresh,
-      because the role is baked into the access token when it is issued
+   └─ the affected user's old credentials immediately return 401; signing in again issues the new role
 ```
 
 Guards ② and ③ exist for one reason: to make it impossible to lock every administrator out of the

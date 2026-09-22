@@ -9,6 +9,7 @@ import com.group5.lostandfoundjava.exception.NotFoundException;
 import com.group5.lostandfoundjava.mapper.UserMapper;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import com.group5.lostandfoundjava.service.AdminUserService;
+import com.group5.lostandfoundjava.service.TokenService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final TokenService tokenService;
 
     @Override
     @Transactional(readOnly = true)
@@ -59,7 +61,11 @@ public class AdminUserServiceImpl implements AdminUserService {
         }
 
         user.setRole(role);
-        return userMapper.toResponse(userRepository.save(user));
+        User saved = userRepository.save(user);
+        // Existing JWTs carry the previous role. Revoking the whole pair makes the
+        // authorization change immediate and prevents refresh-token reuse.
+        tokenService.revokeAll(user.getId());
+        return userMapper.toResponse(saved);
     }
 
     private User findUser(UUID userId) {

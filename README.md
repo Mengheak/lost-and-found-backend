@@ -292,8 +292,8 @@ both go through `MessageService.send`.
 | Carries the role? | yes | no — it is re-read from the database on refresh |
 | Accepted by | every endpoint | only `/api/auth/refresh` |
 
-Two roles exist: `USER` and `ADMIN`. Because the role is baked into the access token, a promotion
-or demotion takes effect at the user's **next login or refresh**, not instantly.
+Two roles exist: `USER` and `ADMIN`. Changing a role immediately revokes all access and refresh
+tokens belonging to that user. They must sign in again to receive tokens with the new role.
 
 Full detail — including exactly what happens when someone spams the login endpoint — is in
 [SYSTEM_FLOW.md](SYSTEM_FLOW.md).

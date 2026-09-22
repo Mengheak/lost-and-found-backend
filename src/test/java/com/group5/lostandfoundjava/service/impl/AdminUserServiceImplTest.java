@@ -3,6 +3,8 @@ package com.group5.lostandfoundjava.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.group5.lostandfoundjava.exception.BadRequestException;
@@ -12,6 +14,7 @@ import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.entity.enums.Role;
 import com.group5.lostandfoundjava.mapper.UserMapper;
 import com.group5.lostandfoundjava.repository.UserRepository;
+import com.group5.lostandfoundjava.service.TokenService;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +24,9 @@ import org.junit.jupiter.api.Test;
 class AdminUserServiceImplTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final AdminUserServiceImpl service = new AdminUserServiceImpl(userRepository, new UserMapper());
+    private final TokenService tokenService = mock(TokenService.class);
+    private final AdminUserServiceImpl service =
+            new AdminUserServiceImpl(userRepository, new UserMapper(), tokenService);
 
     @Test
     @DisplayName("updateRole promotes a regular user to admin")
@@ -34,6 +39,7 @@ class AdminUserServiceImplTest {
 
         assertEquals(Role.ADMIN, response.getRole());
         assertEquals(Role.ADMIN, target.getRole());
+        verify(tokenService).revokeAll(target.getId());
     }
 
     @Test
@@ -71,6 +77,7 @@ class AdminUserServiceImplTest {
         UserResponse response = service.updateRole(UUID.randomUUID(), admin.getId(), Role.USER);
 
         assertEquals(Role.USER, response.getRole());
+        verify(tokenService).revokeAll(admin.getId());
     }
 
     @Test
@@ -82,6 +89,7 @@ class AdminUserServiceImplTest {
         UserResponse response = service.updateRole(admin.getId(), admin.getId(), Role.ADMIN);
 
         assertEquals(Role.ADMIN, response.getRole());
+        verify(tokenService, never()).revokeAll(admin.getId());
     }
 
     @Test
