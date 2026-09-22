@@ -134,6 +134,7 @@ Browser / mobile client
    │  header starts with "Bearer "?  → JwtProvider.parse(token)
    │      signature bad / expired / malformed → parse() returns null → stays anonymous
    │      token type != "access"              → ignored (a refresh token is NOT an access token)
+   │      SHA-256 fingerprint absent, revoked or past expires_at → stays anonymous
    │      valid                                → SecurityContext = (UUID userId, ROLE_USER|ROLE_ADMIN)
    │  NOTHING is rejected here — that is deliberate, it is what keeps public endpoints public
    ▼
@@ -348,7 +349,7 @@ POST /api/auth/refresh   { "refreshToken": "…" }
    │  ② jwtProvider.isRefreshToken(claims)?
    │        no → 401 "Provided token is not a refresh token"
    │        ↑ an ACCESS token cannot be traded for a new pair
-   │  ③ atomically UPDATE the stored token only if it is still active
+   │  ③ SHA-256 fingerprint the token, then atomically UPDATE its row only if still active
    │        zero rows changed → 401 "Refresh token is no longer valid"
    │        ↑ concurrent requests contend here; exactly one can change the row
    │  ④ userRepository.findById(sub)
@@ -872,8 +873,6 @@ Documented so they are deliberate choices rather than surprises.
 | Login throttle | In-memory `ConcurrentHashMap`, keyed by **email only** | Lockouts vanish on restart and are per-instance; a third party can lock a known email out; password-spraying across many emails is unaffected. → Redis, plus an IP-based counter. |
 | WebSocket broker | Spring's in-memory `SimpleBroker` | Subscribers on instance A never see messages published on instance B. → RabbitMQ/ActiveMQ relay. |
 | Message broadcast | `convertAndSend` runs **inside** the `@Transactional` method, before commit | If the transaction rolled back after the broadcast, subscribers would have seen a message that was never stored. → publish after commit. |
-| Refresh tokens | Stateless, not stored, not revocable | A stolen refresh token stays valid for its full 7 days; logout is client-side only. → a token store or a denylist. |
-| Role propagation | Role is a claim inside a 15-minute access token | A demoted admin keeps admin rights until the token expires. Accepted trade-off for not hitting the DB on every request. |
 | Item search | `LIKE %…%` on name/description/brand/colour | Sequential scans, no index. → PostgreSQL full-text search or a trigram index. |
 | Push delivery | FCM **topic** `user-<uuid>` per user | No device tokens are stored (simple), but a client that subscribes to another user's topic would receive their pushes. → per-device tokens. |
 | Rating eligibility | Any user may rate any other about any item | Only the "one per (rater, rated, item)" rule is enforced; there is no check that the item was actually returned or that the two ever talked. |

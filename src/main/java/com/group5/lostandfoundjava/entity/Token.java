@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,8 +20,11 @@ import lombok.ToString;
 @Table(name = "tokens")
 public class Token extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 1000)
-    private String token;
+    @Column(name = "token_hash", nullable = false, unique = true, length = 64)
+    private String tokenHash;
+
+    @Column(name = "expires_at", nullable = false)
+    private Instant expiresAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "token_type", nullable = false, length = 20)
@@ -39,13 +43,10 @@ public class Token extends BaseEntity {
 
     protected Token() {}
 
-    public Token(User user, String token, TokenType tokenType) {
+    public Token(User user, String tokenHash, Instant expiresAt, TokenType tokenType) {
         this.user = user;
-        this.token = token;
+        this.tokenHash = tokenHash;
+        this.expiresAt = expiresAt;
         this.tokenType = tokenType;
-    }
-
-    public boolean isActive() {
-        return !revoked && !expired;
     }
 }

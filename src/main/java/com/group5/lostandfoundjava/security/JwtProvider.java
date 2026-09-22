@@ -80,6 +80,14 @@ public class JwtProvider {
         return TYPE_REFRESH.equals(claims.get(CLAIM_TYPE));
     }
 
+    public Instant expiresAt(String token) {
+        Claims claims = parse(token);
+        if (claims == null || claims.getExpiration() == null) {
+            throw new IllegalArgumentException("Cannot store an invalid JWT");
+        }
+        return claims.getExpiration().toInstant();
+    }
+
     private String generate(UUID userId, Duration ttl, String type, Role role) {
         Instant now = Instant.now();
         JwtBuilder builder =

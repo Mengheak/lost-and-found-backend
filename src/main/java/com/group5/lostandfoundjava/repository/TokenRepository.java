@@ -1,8 +1,7 @@
 package com.group5.lostandfoundjava.repository;
 
 import com.group5.lostandfoundjava.entity.Token;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,11 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TokenRepository extends JpaRepository<Token, UUID> {
 
-    Optional<Token> findByToken(String token);
-
-    // Every token of one user that has not been revoked or expired yet
-    @Query("select t from Token t where t.user.id = :userId and t.revoked = false and t.expired = false")
-    List<Token> findAllActiveTokensByUser(@Param("userId") UUID userId);
+    boolean existsByTokenHashAndRevokedFalseAndExpiredFalseAndExpiresAtAfter(String tokenHash, Instant now);
 
     // Revokes a user's tokens in one statement instead of loading them and saving them back
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -29,8 +24,11 @@ public interface TokenRepository extends JpaRepository<Token, UUID> {
     // contend on the same row; only the first active-token update can affect it.
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Token t set t.revoked = true, t.expired = true "
-            + "where t.token = :token and t.revoked = false and t.expired = false")
-    int consumeActiveToken(@Param("token") String token);
+            + "where t.tokenHash = :tokenHash and t.revoked = false and t.expired = false "
+            + "and t.expiresAt > CURRENT_TIMESTAMP")
+    int consumeActiveTokenHash(@Param("tokenHash") String tokenHash);
 
-    void deleteByUserId(UUID userId);
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Token t where t.expiresAt <= :cutoff")
+    int deleteExpiredBefore(@Param("cutoff") Instant cutoff);
 }

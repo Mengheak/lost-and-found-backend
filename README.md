@@ -293,6 +293,10 @@ both go through `MessageService.send`.
 | Carries the role? | yes | no — it is re-read from the database on refresh |
 | Accepted by | every endpoint | only `/api/auth/refresh` |
 
+The database stores only SHA-256 token fingerprints and their JWT expiration times, never reusable
+bearer-token text. Expired records are deleted hourly. Migration V5 deliberately revokes all tokens
+created by older versions because those rows contain plaintext credentials without expiry metadata.
+
 Two roles exist: `USER` and `ADMIN`. Changing a role immediately revokes all access and refresh
 tokens belonging to that user. They must sign in again to receive tokens with the new role.
 
@@ -338,6 +342,7 @@ Everything has a working default for local development. Override with environmen
 | `DB_USER` / `DB_PASSWORD` | `lostfound` / `lostfound` | database credentials |
 | `JWT_SECRET` | required | HS256 signing key — startup fails unless it contains at least 32 bytes |
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d` | token lifetimes |
+| `TOKEN_CLEANUP_CRON` | `0 0 * * * *` | Spring cron expression for deleting expired token fingerprints |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:4200,http://localhost:4300` | browser origins allowed to call the API |
 | `LOGIN_MAX_ATTEMPTS` | `5` | failures before an email is locked |
 | `LOGIN_LOCKOUT` | `15m` | how long the lockout lasts |

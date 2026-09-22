@@ -6,9 +6,6 @@ import java.util.UUID;
 // The lifecycle of issued tokens: recording them, revoking them
 public interface TokenService {
 
-    // Records a freshly issued token so it can be revoked later
-    void save(User user, String token);
-
     // Records an access/refresh pair issued together
     void savePair(User user, String accessToken, String refreshToken);
 
@@ -19,4 +16,6 @@ public interface TokenService {
     boolean consume(String token);
 
     boolean isActive(String token);
+
+    int purgeExpired();
 }
