@@ -25,5 +25,12 @@ public interface TokenRepository extends JpaRepository<Token, UUID> {
             + "where t.user.id = :userId and (t.revoked = false or t.expired = false)")
     int revokeAllTokensByUser(@Param("userId") UUID userId);
 
+    // Atomic compare-and-set used when rotating a refresh token. Concurrent callers
+    // contend on the same row; only the first active-token update can affect it.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Token t set t.revoked = true, t.expired = true "
+            + "where t.token = :token and t.revoked = false and t.expired = false")
+    int consumeActiveToken(@Param("token") String token);
+
     void deleteByUserId(UUID userId);
 }

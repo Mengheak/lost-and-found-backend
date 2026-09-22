@@ -348,15 +348,18 @@ POST /api/auth/refresh   { "refreshToken": "…" }
    │  ② jwtProvider.isRefreshToken(claims)?
    │        no → 401 "Provided token is not a refresh token"
    │        ↑ an ACCESS token cannot be traded for a new pair
-   │  ③ userRepository.findById(sub)
+   │  ③ atomically UPDATE the stored token only if it is still active
+   │        zero rows changed → 401 "Refresh token is no longer valid"
+   │        ↑ concurrent requests contend here; exactly one can change the row
+   │  ④ userRepository.findById(sub)
    │        gone → 401 "User no longer exists"
-   │  ④ issue a brand-new access + refresh pair
+   │  ⑤ issue a brand-new access + refresh pair
    │
    ▼ 200 OK → AuthResponse
 ```
 
 > **Why the refresh token carries no `role` claim:** the role is re-read from the database in
-> step ③. A role change also revokes every existing token for that user, so those credentials cannot
+> step ④. A role change also revokes every existing token for that user, so those credentials cannot
 > be refreshed; the user must sign in again to receive the current role.
 
 The mirror image, in `JwtAuthenticationFilter`, is just as important: a refresh token presented as

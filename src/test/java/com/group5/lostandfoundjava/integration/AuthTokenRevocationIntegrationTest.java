@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -101,6 +104,43 @@ class AuthTokenRevocationIntegrationTest extends AbstractIntegrationTest {
                 HttpStatus.OK,
                 postJson("/api/auth/refresh", Map.of("refreshToken", rotatedRefreshToken), null)
                         .getStatusCode());
+    }
+
+    @Test
+    @DisplayName("two simultaneous refreshes can consume a token only once")
+    void concurrentRefreshAllowsExactlyOneWinner() throws Exception {
+        String refreshToken = registerUser("concurrent-rotation@example.com")
+                .path("refreshToken").asText();
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+
+        try {
+            var request = (java.util.concurrent.Callable<ResponseEntity<String>>) () -> {
+                ready.countDown();
+                if (!start.await(5, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("Timed out waiting to start concurrent refresh");
+                }
+                return postJson("/api/auth/refresh", Map.of("refreshToken", refreshToken), null);
+            };
+            var first = executor.submit(request);
+            var second = executor.submit(request);
+            assertTrue(ready.await(5, TimeUnit.SECONDS));
+            start.countDown();
+
+            HttpStatus firstStatus = HttpStatus.valueOf(first.get(10, TimeUnit.SECONDS).getStatusCode().value());
+            HttpStatus secondStatus = HttpStatus.valueOf(second.get(10, TimeUnit.SECONDS).getStatusCode().value());
+            long successes = java.util.stream.Stream.of(firstStatus, secondStatus)
+                    .filter(HttpStatus.OK::equals).count();
+            long rejections = java.util.stream.Stream.of(firstStatus, secondStatus)
+                    .filter(HttpStatus.UNAUTHORIZED::equals).count();
+
+            assertEquals(1, successes);
+            assertEquals(1, rejections);
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+        }
     }
 
     @Test

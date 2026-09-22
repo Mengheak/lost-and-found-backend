@@ -284,7 +284,8 @@ both go through `MessageService.send`.
 2. The client sends `Authorization: Bearer <accessToken>` on every request.
 3. `JwtAuthenticationFilter` reads the token and records who the caller is. It **never rejects**
    anything — Spring Security's rules decide afterwards, which is how public endpoints stay public.
-4. When the access token expires, `POST /api/auth/refresh` swaps the refresh token for a new pair.
+4. When the access token expires, `POST /api/auth/refresh` atomically consumes the refresh token
+   and returns a new pair. Concurrent replays of the consumed token receive `401 Unauthorized`.
 
 | | Access token | Refresh token |
 | --- | --- | --- |

@@ -77,7 +77,8 @@ class AuthServiceImplTest {
 
     @BeforeEach
     void allowTokensByDefault() {
-        // Unless a test says otherwise, an issued token is still active
+        // Unless a test says otherwise, this caller wins the atomic token consumption.
+        when(tokenService.consume(anyString())).thenReturn(true);
         when(tokenService.isActive(anyString())).thenReturn(true);
     }
 
@@ -208,7 +209,7 @@ class AuthServiceImplTest {
     void refreshRejectsRevokedToken() {
         User user = user("irrelevant", Role.USER);
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
-        when(tokenService.isActive(refreshToken)).thenReturn(false);
+        when(tokenService.consume(refreshToken)).thenReturn(false);
 
         assertThrows(UnauthorizedException.class, () -> service.refresh(new RefreshTokenRequest(refreshToken)));
     }
@@ -222,7 +223,7 @@ class AuthServiceImplTest {
 
         service.refresh(new RefreshTokenRequest(refreshToken));
 
-        verify(tokenService).revoke(refreshToken);
+        verify(tokenService).consume(refreshToken);
         // Rotation must not log the account out of its other devices
         verify(tokenService, never()).revokeAll(any(UUID.class));
     }

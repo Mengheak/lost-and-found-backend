@@ -15,8 +15,8 @@ public interface TokenService {
     // Marks every token the user currently holds as revoked
     int revokeAll(UUID userId);
 
-    // Revokes a single token, leaving the user's other sessions alone
-    void revoke(String token);
+    // Atomically consumes one active token. Exactly one concurrent caller can succeed.
+    boolean consume(String token);
 
     boolean isActive(String token);
 }

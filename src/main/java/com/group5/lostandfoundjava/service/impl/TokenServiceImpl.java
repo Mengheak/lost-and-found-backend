@@ -37,12 +37,8 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     @Transactional
-    public void revoke(String token) {
-        tokenRepository.findByToken(token).ifPresent(stored -> {
-            stored.setRevoked(true);
-            stored.setExpired(true);
-            tokenRepository.save(stored);
-        });
+    public boolean consume(String token) {
+        return tokenRepository.consumeActiveToken(token) == 1;
     }
 
     // Runs on every authenticated request

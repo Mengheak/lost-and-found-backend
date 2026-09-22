@@ -84,16 +84,15 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtProvider.isRefreshToken(claims)) {
             throw new UnauthorizedException("Provided token is not a refresh token");
         }
-        // Catches a token that is still within its lifetime but was revoked by a logout.
-        if (!tokenService.isActive(refreshToken)) {
+        // Checking and consuming happen in one conditional UPDATE. If simultaneous
+        // requests present this token, only one can rotate it.
+        if (!tokenService.consume(refreshToken)) {
             throw new UnauthorizedException("Refresh token is no longer valid");
         }
 
         User user = userRepository
                 .findById(jwtProvider.userIdFrom(claims))
                 .orElseThrow(() -> new UnauthorizedException("User no longer exists"));
-
-        tokenService.revoke(refreshToken);
 
         return issueTokens(user);
     }
