@@ -21,7 +21,9 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 // Base for the end-to-end tests: a real app on a random port against a real PostgreSQL
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "app.jwt.secret=integration-test-secret-0123456789abcdef")
 @EnabledIf("com.group5.lostandfoundjava.integration.AbstractIntegrationTest#dockerAvailable")
 abstract class AbstractIntegrationTest {
 

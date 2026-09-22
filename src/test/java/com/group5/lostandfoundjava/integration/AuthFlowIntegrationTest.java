@@ -74,24 +74,37 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
         assertFalse(json(response).path("success").asBoolean());
     }
 
-    // There is no login throttle any more; rate limiting will arrive as its own layer.
-    // This pins that: wrong passwords always answer 401, never 429, and never lock the account.
     @Test
-    @DisplayName("repeated wrong passwords keep returning 401 and never lock the account")
-    void repeatedFailuresDoNotLockTheAccount() {
-        registerUser("no-lockout@example.com");
+    @DisplayName("five failures lock an email and reject even the correct password")
+    void repeatedFailuresLockTheEmail() {
+        registerUser("locked@example.com");
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 5; i++) {
             ResponseEntity<String> response =
-                    postJson("/api/auth/login", credentials("no-lockout@example.com", "wrong-password"), null);
+                    postJson("/api/auth/login", credentials("locked@example.com", "wrong-password"), null);
             assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(), "attempt " + (i + 1));
         }
 
-        // The correct password still works straight after a long run of failures.
-        ResponseEntity<String> afterFailures =
-                postJson("/api/auth/login", credentials("no-lockout@example.com"), null);
-        assertEquals(HttpStatus.OK, afterFailures.getStatusCode());
-        assertFalse(json(afterFailures).path("data").path("accessToken").asText().isBlank());
+        ResponseEntity<String> locked = postJson("/api/auth/login", credentials("locked@example.com"), null);
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, locked.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("a successful login clears the previous failure streak")
+    void successfulLoginClearsFailures() {
+        registerUser("streak-reset@example.com");
+        for (int i = 0; i < 2; i++) {
+            assertEquals(HttpStatus.UNAUTHORIZED,
+                    postJson("/api/auth/login", credentials("streak-reset@example.com", "wrong"), null)
+                            .getStatusCode());
+        }
+        assertEquals(HttpStatus.OK,
+                postJson("/api/auth/login", credentials("streak-reset@example.com"), null).getStatusCode());
+        for (int i = 0; i < 4; i++) {
+            assertEquals(HttpStatus.UNAUTHORIZED,
+                    postJson("/api/auth/login", credentials("streak-reset@example.com", "wrong"), null)
+                            .getStatusCode());
+        }
     }
 
     @Test

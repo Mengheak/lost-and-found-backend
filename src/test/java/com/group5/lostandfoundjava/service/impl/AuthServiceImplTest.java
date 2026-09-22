@@ -28,6 +28,7 @@ import com.group5.lostandfoundjava.mapper.UserMapper;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import com.group5.lostandfoundjava.security.JwtProvider;
 import com.group5.lostandfoundjava.service.TokenService;
+import com.group5.lostandfoundjava.service.LoginAttemptService;
 import io.jsonwebtoken.Claims;
 import java.time.Duration;
 import java.util.Optional;
@@ -48,6 +49,7 @@ class AuthServiceImplTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
     private final TokenService tokenService = mock(TokenService.class);
+    private final LoginAttemptService loginAttemptService = mock(LoginAttemptService.class);
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtProvider jwtProvider = new JwtProvider(new JwtProperties(
             "unit-test-secret-0123456789abcdef0123456789", Duration.ofMinutes(15), Duration.ofDays(7)));
@@ -64,7 +66,8 @@ class AuthServiceImplTest {
             authenticationManager,
             tokenService,
             userMapper,
-            authMapper);
+            authMapper,
+            loginAttemptService);
 
     private AuthenticationManager buildAuthenticationManager() {
         UserDetailsService userDetailsService = email -> userRepository
@@ -80,6 +83,7 @@ class AuthServiceImplTest {
         // Unless a test says otherwise, this caller wins the atomic token consumption.
         when(tokenService.consume(anyString())).thenReturn(true);
         when(tokenService.isActive(anyString())).thenReturn(true);
+        when(loginAttemptService.lockoutSecondsRemaining(anyString())).thenReturn(null);
     }
 
     @Test
@@ -146,6 +150,7 @@ class AuthServiceImplTest {
         assertThrows(
                 UnauthorizedException.class,
                 () -> service.login(new LoginRequest("nobody@example.com", "whatever1")));
+        verify(loginAttemptService).recordFailure("nobody@example.com");
     }
 
     @Test
@@ -157,6 +162,7 @@ class AuthServiceImplTest {
         assertThrows(
                 UnauthorizedException.class,
                 () -> service.login(new LoginRequest(user.getEmail(), "wrong-password")));
+        verify(loginAttemptService).recordFailure(user.getEmail());
     }
 
     @Test
@@ -169,6 +175,20 @@ class AuthServiceImplTest {
 
         assertFalse(response.getAccessToken().isBlank());
         assertEquals(user.getId(), response.getUser().getId());
+        verify(loginAttemptService).recordSuccess(user.getEmail());
+    }
+
+    @Test
+    @DisplayName("a locked email is rejected before credentials are checked")
+    void lockedEmailIsRejectedBeforeAuthentication() {
+        when(loginAttemptService.lockoutSecondsRemaining("jane@example.com")).thenReturn(61L);
+
+        var exception = assertThrows(
+                com.group5.lostandfoundjava.exception.TooManyRequestsException.class,
+                () -> service.login(new LoginRequest(" Jane@Example.COM ", "correct-password")));
+
+        assertEquals("Too many failed attempts. Try again in 2 minute(s).", exception.getMessage());
+        verify(userRepository, never()).findByEmail(any());
     }
 
     @Test

@@ -80,8 +80,8 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(
             summary = "Exchange a refresh token for a new token pair",
-            description = "The role is re-read from the database on every refresh, so a promotion or "
-                    + "demotion takes effect on the next refresh rather than only at the next login.")
+            description = "Atomically consumes the supplied refresh token and returns a new token pair. "
+                    + "A token can be exchanged only once; concurrent replays are rejected.")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",

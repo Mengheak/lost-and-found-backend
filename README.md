@@ -336,7 +336,7 @@ Everything has a working default for local development. Override with environmen
 | --- | --- | --- |
 | `DB_URL` / `DB_HOST` / `DB_PORT` / `DB_NAME` | `localhost:5432/lostfound` | database location |
 | `DB_USER` / `DB_PASSWORD` | `lostfound` / `lostfound` | database credentials |
-| `JWT_SECRET` | dev-only value | HS256 signing key — **must be 32+ characters** |
+| `JWT_SECRET` | required | HS256 signing key — startup fails unless it contains at least 32 bytes |
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d` | token lifetimes |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:4200,http://localhost:4300` | browser origins allowed to call the API |
 | `LOGIN_MAX_ATTEMPTS` | `5` | failures before an email is locked |

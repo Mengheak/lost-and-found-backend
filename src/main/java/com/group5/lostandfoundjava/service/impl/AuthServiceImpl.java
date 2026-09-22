@@ -6,14 +6,17 @@ import com.group5.lostandfoundjava.dto.auth.RefreshTokenRequest;
 import com.group5.lostandfoundjava.dto.auth.RegisterRequest;
 import com.group5.lostandfoundjava.entity.User;
 import com.group5.lostandfoundjava.exception.ConflictException;
+import com.group5.lostandfoundjava.exception.TooManyRequestsException;
 import com.group5.lostandfoundjava.exception.UnauthorizedException;
 import com.group5.lostandfoundjava.mapper.AuthMapper;
 import com.group5.lostandfoundjava.mapper.UserMapper;
 import com.group5.lostandfoundjava.repository.UserRepository;
 import com.group5.lostandfoundjava.security.JwtProvider;
 import com.group5.lostandfoundjava.service.AuthService;
+import com.group5.lostandfoundjava.service.LoginAttemptService;
 import com.group5.lostandfoundjava.service.TokenService;
 import io.jsonwebtoken.Claims;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenService tokenService;
     private final UserMapper userMapper;
     private final AuthMapper authMapper;
+    private final LoginAttemptService loginAttemptService;
 
     @Override
     @Transactional
@@ -51,12 +55,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        Long remainingSeconds = loginAttemptService.lockoutSecondsRemaining(email);
+        if (remainingSeconds != null) {
+            long remainingMinutes = (remainingSeconds + 59L) / 60L;
+            throw new TooManyRequestsException(
+                    "Too many failed attempts. Try again in " + remainingMinutes + " minute(s).");
+        }
 
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, request.getPassword()));
         } catch (AuthenticationException ex) {
+            loginAttemptService.recordFailure(email);
             throw new UnauthorizedException("Invalid email or password");
         }
 
@@ -64,6 +75,8 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+
+        loginAttemptService.recordSuccess(email);
 
         // Signing in afresh ends the account's other sessions
         tokenService.revokeAll(user.getId());

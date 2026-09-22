@@ -29,7 +29,14 @@ public class JwtProvider {
     private final Duration refreshTtl;
 
     public JwtProvider(JwtProperties properties) {
-        this.key = Keys.hmacShaKeyFor(properties.secret().getBytes(StandardCharsets.UTF_8));
+        if (properties.secret() == null || properties.secret().isBlank()) {
+            throw new IllegalStateException("JWT_SECRET is required");
+        }
+        byte[] secret = properties.secret().getBytes(StandardCharsets.UTF_8);
+        if (secret.length < 32) {
+            throw new IllegalStateException("JWT_SECRET must contain at least 32 bytes for HS256");
+        }
+        this.key = Keys.hmacShaKeyFor(secret);
         this.accessTtl = properties.accessTokenTtl();
         this.refreshTtl = properties.refreshTokenTtl();
     }
