@@ -6,79 +6,28 @@ services:
     command: postgres -c shared_buffers=96MB -c max_connections=30
     environment:
       POSTGRES_DB: ${DB_NAME:?required}
-      POSTGRES_USER: ${DB_ADMIN_USER:?required}
-      POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD:?required}
+      POSTGRES_USER: ${DB_USER:?required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?required}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     mem_limit: 256m
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 10
-
-  db-init:
-    image: postgres:16-alpine
-    restart: "no"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DB_HOST: db
-      DB_NAME: ${DB_NAME:?required}
-      DB_ADMIN_USER: ${DB_ADMIN_USER:?required}
-      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:?required}
-      DB_MIGRATION_USER: ${DB_MIGRATION_USER:?required}
-      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:?required}
-      DB_USER: ${DB_USER:?required}
-      DB_PASSWORD: ${DB_PASSWORD:?required}
-    volumes:
-      - ./docker/postgres/provision-roles.sh:/scripts/provision-roles.sh:ro
-    entrypoint: ["/bin/sh", "/scripts/provision-roles.sh"]
-
-  migrate:
-    image: flyway/flyway:11.7.2-alpine
-    restart: "no"
-    depends_on:
-      db-init:
-        condition: service_completed_successfully
-    environment:
-      FLYWAY_URL: jdbc:postgresql://db:5432/${DB_NAME:?required}
-      FLYWAY_USER: ${DB_MIGRATION_USER:?required}
-      FLYWAY_PASSWORD: ${DB_MIGRATION_PASSWORD:?required}
-      FLYWAY_LOCATIONS: filesystem:/flyway/sql
-    volumes:
-      - ./src/main/resources/db/migration:/flyway/sql:ro
-    command: ["migrate"]
-
-  db-grants:
-    image: postgres:16-alpine
-    restart: "no"
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-    environment:
-      DB_HOST: db
-      DB_NAME: ${DB_NAME:?required}
-      DB_ADMIN_USER: ${DB_ADMIN_USER:?required}
-      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:?required}
-      DB_USER: ${DB_USER:?required}
-    volumes:
-      - ./docker/postgres/grant-runtime-access.sh:/scripts/grant-runtime-access.sh:ro
-    entrypoint: ["/bin/sh", "/scripts/grant-runtime-access.sh"]
 
   app:
     image: ghcr.io/${GH_REPO:?required}:${IMAGE_TAG:-latest}
     container_name: lostfound-java-app
     restart: unless-stopped
     depends_on:
-      db-grants:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_FLYWAY_ENABLED: "false"
       DB_HOST: db
       DB_PORT: "5432"
       DB_NAME: ${DB_NAME:?required}

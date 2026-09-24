@@ -48,12 +48,8 @@ jobs:
           script: |
             set -e
             cd ~/lost-and-found-backend
-            docker compose pull app db db-init migrate db-grants
-            docker compose up -d --wait db
-            docker compose run --rm --no-deps db-init
-            docker compose run --rm --no-deps migrate
-            docker compose run --rm --no-deps db-grants
-            docker compose up -d --no-deps --force-recreate app
+            docker compose pull app
+            docker compose up -d --force-recreate app
             for i in $(seq 1 20); do
               if curl -fsS http://localhost:8080/actuator/health > /dev/null; then
                 echo "Health check passed"

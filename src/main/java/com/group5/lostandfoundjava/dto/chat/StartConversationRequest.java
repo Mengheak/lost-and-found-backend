@@ -1,5 +1,6 @@
 package com.group5.lostandfoundjava.dto.chat;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,8 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor // @Builder needs it back once an explicit constructor is declared
 public class StartConversationRequest {
 
+    @NotNull(message = "itemId is required")
     private UUID itemId;
-
-    // Optional: left out, the conversation is started with whoever reported the item
-    private UUID otherUserId;
 }

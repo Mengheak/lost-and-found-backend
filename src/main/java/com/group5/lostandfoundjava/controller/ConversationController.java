@@ -43,22 +43,21 @@ public class ConversationController {
     @PostMapping
     @Operation(
             summary = "Start a conversation about an item, or get the existing one",
-            description = "Idempotent for a given (item, caller, other user) triple: calling it twice "
-                    + "returns the same thread rather than creating a duplicate. `otherUserId` defaults to the "
-                    + "item's owner when omitted, which is the usual case.")
+            description = "The caller contacts the item's publisher. Calling this again for the same item "
+                    + "returns the existing conversation.")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",
                 description = "Conversation created or already existed"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "400",
-                description = "Validation failed, or the caller is the other participant"),
+                description = "itemId is missing, or the caller published the item"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "401",
                 description = "Missing or invalid access token"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404",
-                description = "No item or no other user with that id")
+                description = "No item with that id")
     })
     public ApiResponse<ConversationResponse> startOrGet(
             @Parameter(hidden = true) @AuthenticationPrincipal UUID userId,

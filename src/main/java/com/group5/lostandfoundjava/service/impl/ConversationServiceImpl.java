@@ -38,26 +38,21 @@ public class ConversationServiceImpl implements ConversationService {
                 .findById(request.getItemId())
                 .orElseThrow(() -> new NotFoundException("Item not found"));
 
-        // Talking about an item almost always means talking to whoever reported it.
-        UUID otherUserId =
-                request.getOtherUserId() == null ? item.getUser().getId() : request.getOtherUserId();
-        if (otherUserId.equals(currentUserId)) {
+        UUID publisherId = item.getUser().getId();
+        if (publisherId.equals(currentUserId)) {
             throw new BadRequestException("You cannot start a conversation with yourself");
         }
 
         Optional<Conversation> existing =
-                conversationRepository.findByItemAndParticipants(item.getId(), currentUserId, otherUserId);
+                conversationRepository.findByItemAndParticipants(item.getId(), currentUserId, publisherId);
         if (existing.isPresent()) {
             return conversationMapper.toResponse(existing.get());
         }
 
         User currentUser =
                 userRepository.findById(currentUserId).orElseThrow(() -> new NotFoundException("User not found"));
-        User otherUser =
-                userRepository.findById(otherUserId).orElseThrow(() -> new NotFoundException("Other user not found"));
-
         Conversation conversation =
-                conversationRepository.save(conversationMapper.toEntity(item, currentUser, otherUser));
+                conversationRepository.save(conversationMapper.toEntity(item, currentUser, item.getUser()));
         return conversationMapper.toResponse(conversation);
     }
 
